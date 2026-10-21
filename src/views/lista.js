@@ -1,8 +1,9 @@
 // 📋 Lista com busca, filtros e ordenação por distância.
 import { assinar } from '../store.js';
+import { salvarAchado } from '../achados.js';
 import { distanciaKm, formatarKm, posicaoAtual, temCoord } from '../lib/geo.js';
 import {
-  esc, html, toast, tipoInfo, STATUS, REGIOES, lerFiltros, aplicarFiltros, barraFiltros,
+  esc, html, toast, tipoInfo, STATUS, REGIOES, lerFiltros, aplicarFiltros, barraFiltros, campoBusca,
   formatarDuracao, precisaCompletar, DIFICULDADES
 } from '../ui.js';
 
@@ -52,6 +53,15 @@ export function render(container) {
   </section>`);
   container.append(el);
   el.querySelector('.busca-linha').after(barraFiltros(filtros, () => desenhar()));
+  // Busca na internet: acha um lugar novo e já salva na lista
+  el.querySelector('.busca-linha').before(campoBusca({
+    placeholder: '🔎 Achar lugar novo na internet…',
+    onEscolher: async (r) => {
+      const id = await salvarAchado(r);
+      toast('✨ Salvo: ' + r.nome);
+      location.hash = `#/lugar/${encodeURIComponent(id)}`;
+    }
+  }));
 
   const listaEl = el.querySelector('.lista');
   const sel = el.querySelector('.select-ordem');

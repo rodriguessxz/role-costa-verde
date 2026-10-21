@@ -1,13 +1,14 @@
 // ➕ Adicionar lugar rápido: nome + tipo + (opcional) minha localização ou link do Wikiloc.
 import { adicionar } from '../store.js';
 import { posicaoAtual } from '../lib/geo.js';
-import { html, toast, TIPOS } from '../ui.js';
+import { html, toast, TIPOS, campoBusca } from '../ui.js';
 
 export function render(container) {
   let pos = null;
   const el = html(`<section class="pagina">
     <h1>➕ Novo lugar</h1>
     <p class="sub">Rapidinho: o resto dá pra completar depois.</p>
+    <div class="busca-slot"></div>
     <form class="form">
       <label>Nome<input class="input" name="nome" required placeholder="Ex.: Cachoeira escondida do Seu Zé" autocomplete="off"/></label>
       <div class="tipo-grid">
@@ -22,6 +23,18 @@ export function render(container) {
     </form>
   </section>`);
   container.append(el);
+
+  // Busca na internet: preenche nome, tipo e localização
+  el.querySelector('.busca-slot').append(campoBusca({
+    placeholder: '🔎 Buscar na internet e preencher',
+    onEscolher: (r) => {
+      pos = { lat: r.lat, lng: r.lng, precisao: 0 };
+      el.querySelector('[name=nome]').value = r.nome;
+      el.querySelector(`[name=tipo][value=${r.tipo}]`).checked = true;
+      if (r.detalhe) el.querySelector('[name=descricao]').value = r.detalhe;
+      el.querySelector('[data-pos]').textContent = '✅ Localização veio da busca';
+    }
+  }));
 
   el.querySelector('[data-acao="gps"]').addEventListener('click', async () => {
     el.querySelector('[data-pos]').textContent = '📡 Procurando…';

@@ -216,17 +216,33 @@ textarea.input { resize: vertical; }
 .cabeca-lista { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 10px; }
 .cabeca-lista .contagem { color: var(--texto-2); font-weight: 600; font-size: .9rem; }
 
+/* ---------- Busca na internet ---------- */
+.busca-geo { position: relative; margin-bottom: 10px; }
+.busca-geo .input { padding-left: 42px; box-shadow: var(--sombra);
+  background: var(--bg-2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23ff6a4d' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M20 20l-3.5-3.5'/%3E%3C/svg%3E") no-repeat 14px center; }
+.busca-resultados {
+  position: absolute; z-index: 900; left: 0; right: 0; top: calc(100% + 6px); max-height: 50dvh; overflow-y: auto;
+  background: var(--bg-2); border: 1px solid var(--borda); border-radius: 18px; box-shadow: var(--sombra-forte); padding: 6px;
+}
+.busca-item { display: flex; gap: 12px; align-items: center; width: 100%; padding: 10px; border: 0; background: none; border-radius: 12px; text-align: left; font: inherit; color: inherit; cursor: pointer; min-height: 52px; }
+.busca-item:active, .busca-item:hover { background: var(--areia); }
+.busca-item small { display: block; color: var(--texto-2); font-size: .8rem; }
+.busca-emoji { font-size: 1.4rem; width: 40px; height: 40px; display: grid; place-items: center; background: var(--areia); border-radius: 12px; flex: none; }
+.busca-msg { margin: 0; padding: 12px; color: var(--texto-2); font-size: .9rem; }
+.mapa-busca { position: absolute; z-index: 700; left: 12px; right: 12px; top: calc(var(--topbar-h) + var(--safe-t) + 8px); margin: 0; max-width: 560px; }
+.mapa-busca .input { border-radius: 18px; }
+
 /* ---------- Mapa ---------- */
 .view-mapa { padding-top: 0 !important; padding-bottom: 0 !important; }
 .mapa-wrap { position: relative; height: 100dvh; }
 #mapa { position: absolute; inset: 0; z-index: 1; background: var(--areia); }
 .mapa-wrap .filtros {
-  position: absolute; z-index: 500; inset: calc(var(--topbar-h) + var(--safe-t) + 4px) 0 auto 0; pointer-events: none;
+  position: absolute; z-index: 500; inset: calc(var(--topbar-h) + var(--safe-t) + 62px) 0 auto 0; pointer-events: none;
 }
 .mapa-wrap .filtros .chip { pointer-events: auto; box-shadow: var(--sombra); }
 .mapa-wrap .filtros .chip:not(.on) { background: var(--vidro); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
 .fab {
-  position: absolute; z-index: 500; right: 14px; top: calc(var(--topbar-h) + var(--safe-t) + 112px);
+  position: absolute; z-index: 500; right: 14px; top: calc(var(--topbar-h) + var(--safe-t) + 172px);
   width: 50px; height: 50px; border-radius: 16px; border: 1px solid var(--borda);
   background: var(--vidro); box-shadow: var(--sombra); color: var(--destaque); cursor: pointer;
   display: grid; place-items: center; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);

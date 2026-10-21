@@ -80,3 +80,23 @@ test('classificação de clima', () => {
   assert.equal(classificarClima(61, 1), 'chuva');
   assert.equal(classificarClima(95, 0), 'chuva-forte');
 });
+
+test('busca: tipo e conversão do resultado do geocoder', async () => {
+  const { tipoDoResultado, converterResultado } = await import('./geocode.js');
+  assert.equal(tipoDoResultado({ osm_key: 'tourism', osm_value: 'camp_site' }), 'camping');
+  assert.equal(tipoDoResultado({ osm_key: 'natural', osm_value: 'beach' }), 'praia');
+  assert.equal(tipoDoResultado({ osm_key: 'waterway', osm_value: 'waterfall' }), 'cachoeira');
+  assert.equal(tipoDoResultado({ osm_key: 'shop', osm_value: 'supermarket' }), 'apoio');
+  const r = converterResultado({
+    geometry: { coordinates: [-44.7, -23.2] },
+    properties: { name: 'Praia X', city: 'Paraty', state: 'Rio de Janeiro', osm_key: 'natural', osm_value: 'beach' }
+  });
+  assert.deepEqual([r.nome, r.detalhe, r.lat, r.lng, r.tipo], ['Praia X', 'Paraty, Rio de Janeiro', -23.2, -44.7, 'praia']);
+  assert.equal(converterResultado({ geometry: { coordinates: [1, 2] }, properties: {} }), null);
+});
+
+test('busca: resultados da região vêm primeiro', async () => {
+  const { priorizarPerto } = await import('./geocode.js');
+  const r = priorizarPerto([{ nome: 'MG', lat: -20, lng: -44 }, { nome: 'Paraty', lat: -23.22, lng: -44.71 }]);
+  assert.equal(r[0].nome, 'Paraty');
+});

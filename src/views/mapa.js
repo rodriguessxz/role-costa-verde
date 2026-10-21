@@ -1,8 +1,9 @@
 // 🗺️ Mapa com pins por tipo, filtros e "perto de mim".
 import L from 'leaflet';
 import { assinar } from '../store.js';
+import { salvarAchado } from '../achados.js';
 import { temCoord, posicaoAtual, linkGoogleMaps, CENTRO_REGIAO } from '../lib/geo.js';
-import { esc, html, toast, tipoInfo, STATUS, lerFiltros, aplicarFiltros, barraFiltros, formatarDuracao, DIFICULDADES } from '../ui.js';
+import { esc, html, toast, tipoInfo, STATUS, lerFiltros, aplicarFiltros, barraFiltros, campoBusca, formatarDuracao, DIFICULDADES } from '../ui.js';
 
 // Lembra a última visão do mapa entre trocas de aba
 let ultimaVisao = null;
@@ -17,6 +18,19 @@ function icone(l) {
     iconSize: [38, 38],
     iconAnchor: [19, 38]
   });
+}
+
+/** Folha para um lugar achado na busca (ainda não salvo). */
+function folhaAchadoHtml(r) {
+  const t = tipoInfo(r.tipo);
+  return `<div class="folha-topo" style="--cor:${t.cor}">
+      <span class="card-emoji">${t.emoji}</span>
+      <div><div class="folha-nome">${esc(r.nome)}</div><div class="folha-meta">${esc(r.detalhe || 'Resultado da busca')}</div></div>
+    </div>
+    <div class="acoes">
+      <button class="btn" data-acao="salvar">➕ Salvar na lista</button>
+      <a class="btn btn-sec" href="${linkGoogleMaps(r)}" target="_blank" rel="noopener">🧭 Rota</a>
+    </div>`;
 }
 
 /** Conteúdo da folha que sobe ao tocar num pin. */
@@ -68,6 +82,7 @@ export function render(container) {
   let pinSel = null;
   const fecharFolha = () => {
     folha.classList.remove('aberta');
+    if (achado) { marcaAchado?.remove(); marcaAchado = null; achado = null; }
     pinSel?.getElement()?.querySelector('.pin')?.classList.remove('pin-sel');
     pinSel = null;
   };
@@ -80,6 +95,29 @@ export function render(container) {
     map.panTo([l.lat, l.lng], { animate: true });
   };
   map.on('click', fecharFolha);
+
+  // Busca ativa: voa até o resultado e oferece salvar
+  let achado = null;
+  let marcaAchado = null;
+  const limparAchado = () => { marcaAchado?.remove(); marcaAchado = null; achado = null; };
+  el.prepend(Object.assign(campoBusca({
+    placeholder: 'Buscar camping, praia, trilha…',
+    onEscolher: (r) => {
+      limparAchado();
+      achado = r;
+      marcaAchado = L.marker([r.lat, r.lng], { icon: icone({ tipo: r.tipo, status: 'quero-ir' }) }).addTo(map);
+      map.flyTo([r.lat, r.lng], 15);
+      folha.innerHTML = folhaAchadoHtml(r);
+      folha.classList.add('aberta');
+    }
+  }), { className: 'busca-geo mapa-busca' }));
+  folha.addEventListener('click', async (e) => {
+    if (!e.target.closest('[data-acao="salvar"]') || !achado) return;
+    const id = await salvarAchado(achado);
+    toast('✨ Salvo na lista!');
+    limparAchado();
+    location.hash = `#/lugar/${encodeURIComponent(id)}`;
+  });
 
   const desenhar = () => {
     fecharFolha();
