@@ -35,11 +35,11 @@ export default defineConfig({
       },
       workbox: {
         // App shell + seed ficam em cache para abrir sem sinal
-        globPatterns: ['**/*.{js,css,html,png,svg,json}'],
+        globPatterns: ['**/*.{js,css,html,png,svg,json,woff2}'],
         runtimeCaching: [
           {
             // Tiles do mapa: guarda o que já foi visto (até ~3000 tiles)
-            urlPattern: /^https:\/\/[abc]\.tile\.openstreetmap\.org\/.*/,
+            urlPattern: /^https:\/\/([abc]\.tile\.openstreetmap\.org|[abcd]\.basemaps\.cartocdn\.com)\/.*/,
             handler: 'CacheFirst',
             options: {
               cacheName: 'tiles-osm',

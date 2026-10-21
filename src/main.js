@@ -35,6 +35,21 @@ function rotear() {
   window.scrollTo(0, 0);
 }
 
+/** Pílula do topo: contagem regressiva até a trip e "dia N" durante ela. */
+function atualizarPilula() {
+  const pill = document.getElementById('trip-pill');
+  const dia = 86400000;
+  const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
+  const inicio = new Date(2026, 11, 23);
+  const fim = new Date(2027, 0, 6);
+  const faltam = Math.round((inicio - hoje) / dia);
+  if (faltam > 1) pill.textContent = `faltam ${faltam} dias`;
+  else if (faltam === 1) pill.textContent = 'é amanhã!';
+  else if (hoje <= fim) pill.textContent = `dia ${Math.round((hoje - inicio) / dia) + 1} da trip`;
+  else return;
+  pill.hidden = false;
+}
+
 /** Badge de offline no topo */
 function monitorarRede() {
   const badge = document.getElementById('net-badge');
@@ -46,6 +61,7 @@ function monitorarRede() {
 
 async function iniciar() {
   monitorarRede();
+  atualizarPilula();
   window.addEventListener('store-erro', (e) => {
     const code = e.detail?.code || '';
     toast(code === 'permission-denied' ? '🔒 Sem permissão: confira se seu e-mail está liberado' : '⚠️ Erro ao salvar');

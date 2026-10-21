@@ -39,6 +39,7 @@ function card(l) {
 export function render(container) {
   const filtros = lerFiltros();
   const el = html(`<section class="pagina">
+    <div class="cabeca-lista"><h1>Lugares</h1><span class="contagem"></span></div>
     <div class="busca-linha">
       <input type="search" class="input" placeholder="Buscar lugar, tag, região…" value="${esc(filtros.busca)}" />
       <select class="input select-ordem" aria-label="Ordenar">
@@ -76,6 +77,7 @@ export function render(container) {
         return `<h3 class="grupo">${esc(REGIOES[r] || 'Sem região')} <small>${doGrupo.length}</small></h3>${doGrupo.map(card).join('')}`;
       }).join('');
     }
+    el.querySelector('.contagem').textContent = `${itens.length} ${itens.length === 1 ? 'lugar' : 'lugares'}`;
     if (!itens.length) listaEl.innerHTML = '<p class="vazio">Nada por aqui com esses filtros 🤷</p>';
   }
 
