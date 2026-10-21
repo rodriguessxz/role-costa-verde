@@ -1,0 +1,24 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Só os e-mails da dupla podem ler e escrever.
+    // Para liberar o parça, troque o e-mail de exemplo e publique as regras de novo.
+    function daDupla() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && request.auth.token.email in [
+          'arthurrodrigueszxz@gmail.com',
+          'EMAIL_DO_PARCA@gmail.com'
+        ];
+    }
+
+    match /trips/{tripId}/{colecao}/{docId} {
+      allow read, write: if daDupla();
+    }
+
+    // Todo o resto fica fechado
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "name": "role-costa-verde",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host",
+    "build": "vite build",
+    "preview": "vite preview --host",
+    "test": "node --test \"src/lib/*.test.js\""
+  },
+  "dependencies": {
+    "firebase": "^13.1.0",
+    "leaflet": "^1.9.4"
+  },
+  "devDependencies": {
+    "vite": "^6.4.5",
+    "vite-plugin-pwa": "^2.0.0"
+  }
+}

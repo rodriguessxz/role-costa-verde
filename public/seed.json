@@ -1,0 +1,311 @@
+{
+  "_meta": {
+    "descricao": "Lista inicial de lugares entre Ubatuba e Paraty. Coordenadas com coordAprox=true são aproximadas: conferir no Wikiloc/Google Maps. Preços e contatos de campings ficam vazios de propósito: confirmar direto com cada um.",
+    "versao": 1,
+    "geradoEm": "2026-10-21"
+  },
+  "lugares": [
+    {
+      "id": "camping-orlando-mamangua",
+      "nome": "Camping/Restaurante do Orlando (Praia do Cruzeiro)",
+      "tipo": "camping",
+      "regiao": "paraty-mirim",
+      "lat": -23.262, "lng": -44.640, "coordAprox": true,
+      "descricao": "Na Praia do Cruzeiro, no Saco do Mamanguá, ao lado do início da trilha do Pão de Açúcar. Restaurante com pratos bem servidos. Acesso só de barco a partir de Paraty-Mirim.",
+      "acesso": "barco", "reservaNecessaria": true,
+      "precoNoite": null, "contato": "",
+      "status": "quero-ir", "tags": ["mamangua", "base-pao-de-acucar"]
+    },
+    {
+      "id": "camping-jabaquara-paraty",
+      "nome": "Camping Jabaquara",
+      "tipo": "camping",
+      "regiao": "paraty",
+      "lat": -23.205, "lng": -44.712, "coordAprox": true,
+      "descricao": "Camping grande na Praia do Jabaquara, perto do centro histórico de Paraty. Quiosques em frente.",
+      "acesso": "carro", "reservaNecessaria": true,
+      "precoNoite": null, "contato": "",
+      "status": "quero-ir", "tags": ["perto-do-centro", "reveillon"]
+    },
+    {
+      "id": "camping-trindade-cachadaco",
+      "nome": "Campings de Trindade (região do Cachadaço/Ranchos)",
+      "tipo": "camping",
+      "regiao": "trindade",
+      "lat": -23.352, "lng": -44.722, "coordAprox": true,
+      "descricao": "Trindade tem muitos campings na vila. Escolher um e atualizar esta ficha com nome, preço e contato. Lota muito no Réveillon.",
+      "acesso": "carro", "reservaNecessaria": true,
+      "precoNoite": null, "contato": "",
+      "status": "quero-ir", "tags": ["trindade", "reveillon", "escolher"]
+    },
+    {
+      "id": "camping-tio-gato-itamambuca",
+      "nome": "Camping Tio Gato (Itamambuca)",
+      "tipo": "camping",
+      "regiao": "ubatuba-norte",
+      "lat": -23.394, "lng": -45.004, "coordAprox": true,
+      "descricao": "Itamambuca, norte de Ubatuba. Região com mercado, bares e boa infraestrutura, perto da praia.",
+      "acesso": "carro", "reservaNecessaria": true,
+      "precoNoite": null, "contato": "",
+      "status": "quero-ir", "tags": ["surf", "infraestrutura"]
+    },
+    {
+      "id": "camping-padang-itamambuca",
+      "nome": "Padang Surf Camping (Itamambuca)",
+      "tipo": "camping",
+      "regiao": "ubatuba-norte",
+      "lat": -23.393, "lng": -45.006, "coordAprox": true,
+      "descricao": "Outra opção em Itamambuca, perto da praia.",
+      "acesso": "carro", "reservaNecessaria": true,
+      "precoNoite": null, "contato": "",
+      "status": "quero-ir", "tags": ["surf"]
+    },
+    {
+      "id": "camping-itagua-ubatuba",
+      "nome": "Camping Itaguá",
+      "tipo": "camping",
+      "regiao": "ubatuba-centro",
+      "lat": -23.452, "lng": -45.064, "coordAprox": true,
+      "descricao": "Próximo ao centro de Ubatuba. Bom ponto de apoio (mercado, farmácia, rodoviária).",
+      "acesso": "carro", "reservaNecessaria": false,
+      "precoNoite": null, "contato": "",
+      "status": "quero-ir", "tags": ["apoio", "centro"]
+    },
+    {
+      "id": "camping-ccb-maranduba",
+      "nome": "Camping Clube do Brasil (Maranduba)",
+      "tipo": "camping",
+      "regiao": "ubatuba-sul",
+      "lat": -23.535, "lng": -45.225, "coordAprox": true,
+      "descricao": "Sul de Ubatuba. Base para Caçandoca, Saco das Bananas e Trilha das 7 Praias.",
+      "acesso": "carro", "reservaNecessaria": true,
+      "precoNoite": null, "contato": "",
+      "status": "quero-ir", "tags": ["base-sul"]
+    },
+
+    {
+      "id": "trilha-pao-de-acucar-mamangua",
+      "nome": "Pico do Pão de Açúcar (Mamanguá)",
+      "tipo": "trilha",
+      "regiao": "paraty-mirim",
+      "lat": -23.265, "lng": -44.632, "coordAprox": true,
+      "descricao": "Topo com ~430 m e vista do fiorde inteiro. Subida curta, íngreme, ~1h. Começa na Praia do Cruzeiro; chegar de barco saindo de Paraty-Mirim (~45 min). Evitar com chuva.",
+      "wikilocUrl": "", "gpxNoRelogio": false,
+      "distanciaKm": null, "duracaoMin": 150,
+      "dificuldade": "dificil", "acesso": "barco", "precisaGuia": false,
+      "status": "quero-ir", "tags": ["vista", "classico", "bate-volta"]
+    },
+    {
+      "id": "trilha-praia-do-sono",
+      "nome": "Trilha da Praia do Sono",
+      "tipo": "trilha",
+      "regiao": "trindade",
+      "lat": -23.334, "lng": -44.668, "coordAprox": true,
+      "descricao": "Sai do Condomínio Laranjeiras (ônibus Vila Oratório tem ponto final perto). Trilha bem demarcada, ~2h. Dá pra voltar de barco. Daí dá pra esticar até Antigos/Ponta Negra.",
+      "wikilocUrl": "", "gpxNoRelogio": false,
+      "distanciaKm": null, "duracaoMin": 120,
+      "dificuldade": "moderada", "acesso": "a-pe", "precisaGuia": false,
+      "status": "quero-ir", "tags": ["praia-selvagem", "classico"]
+    },
+    {
+      "id": "piscina-natural-cachadaco",
+      "nome": "Piscina Natural do Cachadaço",
+      "tipo": "praia",
+      "regiao": "trindade",
+      "lat": -23.363, "lng": -44.716, "coordAprox": true,
+      "descricao": "Principal atração de Trindade. Trilhas curtas pelas praias até o fim do Cachadaço (~2 km). Melhor com maré baixa e mar calmo.",
+      "wikilocUrl": "", "gpxNoRelogio": false,
+      "distanciaKm": 2, "duracaoMin": 45,
+      "dificuldade": "facil", "acesso": "a-pe", "precisaGuia": false,
+      "status": "quero-ir", "tags": ["banho", "snorkel", "mare-baixa"]
+    },
+    {
+      "id": "cachoeira-toboga",
+      "nome": "Cachoeira do Tobogã (Penha)",
+      "tipo": "cachoeira",
+      "regiao": "paraty",
+      "lat": -23.193, "lng": -44.783, "coordAprox": true,
+      "descricao": "Na estrada Paraty-Cunha. Pedra lisa pra escorregar. Acesso fácil de carro.",
+      "wikilocUrl": "", "gpxNoRelogio": false,
+      "distanciaKm": null, "duracaoMin": 90,
+      "dificuldade": "facil", "acesso": "carro", "precisaGuia": false,
+      "status": "quero-ir", "tags": ["banho", "diversao"]
+    },
+    {
+      "id": "poco-do-tarzan",
+      "nome": "Poço do Tarzan",
+      "tipo": "cachoeira",
+      "regiao": "paraty",
+      "lat": -23.188, "lng": -44.792, "coordAprox": true,
+      "descricao": "Também na estrada Paraty-Cunha, combina com o Tobogã no mesmo dia.",
+      "wikilocUrl": "", "gpxNoRelogio": false,
+      "distanciaKm": null, "duracaoMin": 60,
+      "dificuldade": "facil", "acesso": "carro", "precisaGuia": false,
+      "status": "quero-ir", "tags": ["banho", "combo-toboga"]
+    },
+    {
+      "id": "cachoeira-pedra-branca",
+      "nome": "Cachoeira da Pedra Branca",
+      "tipo": "cachoeira",
+      "regiao": "paraty",
+      "lat": -23.186, "lng": -44.756, "coordAprox": true,
+      "descricao": "Uma das cachoeiras recomendadas de Paraty, região dos alambiques.",
+      "wikilocUrl": "", "gpxNoRelogio": false,
+      "distanciaKm": null, "duracaoMin": 90,
+      "dificuldade": "facil", "acesso": "carro", "precisaGuia": false,
+      "status": "quero-ir", "tags": ["banho", "alambique"]
+    },
+    {
+      "id": "praia-da-justa",
+      "nome": "Praia da Justa (via Ubatumirim)",
+      "tipo": "praia",
+      "regiao": "ubatuba-norte",
+      "lat": -23.347, "lng": -44.881, "coordAprox": true,
+      "descricao": "Caminhada de ~10 min saindo de Ubatumirim (ou pela água na maré baixa). Mar calmo e cristalino.",
+      "wikilocUrl": "", "gpxNoRelogio": false,
+      "distanciaKm": 1, "duracaoMin": 20,
+      "dificuldade": "facil", "acesso": "a-pe", "precisaGuia": false,
+      "status": "quero-ir", "tags": ["banho", "tranquila"]
+    },
+    {
+      "id": "praia-da-fazenda-picinguaba",
+      "nome": "Praia da Fazenda (Núcleo Picinguaba)",
+      "tipo": "praia",
+      "regiao": "ubatuba-norte",
+      "lat": -23.367, "lng": -44.856, "coordAprox": true,
+      "descricao": "Dentro do Parque Estadual da Serra do Mar, preservada e sem infraestrutura. Tem trilhas do núcleo.",
+      "wikilocUrl": "", "gpxNoRelogio": false,
+      "distanciaKm": null, "duracaoMin": 60,
+      "dificuldade": "facil", "acesso": "carro", "precisaGuia": false,
+      "status": "quero-ir", "tags": ["selvagem", "parque"]
+    },
+    {
+      "id": "ilha-das-couves",
+      "nome": "Ilha das Couves",
+      "tipo": "praia",
+      "regiao": "ubatuba-norte",
+      "lat": -23.418, "lng": -44.855, "coordAprox": true,
+      "descricao": "Cartão-postal de Ubatuba. Barco sai de Picinguaba. Só com mar bom.",
+      "wikilocUrl": "", "gpxNoRelogio": false,
+      "distanciaKm": null, "duracaoMin": 300,
+      "dificuldade": "facil", "acesso": "barco", "precisaGuia": false,
+      "status": "quero-ir", "tags": ["agua-cristalina", "barco"]
+    },
+    {
+      "id": "praia-puruba",
+      "nome": "Praia do Puruba",
+      "tipo": "praia",
+      "regiao": "ubatuba-norte",
+      "lat": -23.361, "lng": -44.929, "coordAprox": true,
+      "descricao": "Uma das mais preservadas de Ubatuba, encontro de rio e mar. Precisa atravessar o rio.",
+      "wikilocUrl": "", "gpxNoRelogio": false,
+      "distanciaKm": null, "duracaoMin": 30,
+      "dificuldade": "facil", "acesso": "carro", "precisaGuia": false,
+      "status": "quero-ir", "tags": ["selvagem", "rio"]
+    },
+    {
+      "id": "cachoeira-prumirim",
+      "nome": "Cachoeira do Prumirim",
+      "tipo": "cachoeira",
+      "regiao": "ubatuba-norte",
+      "lat": -23.385, "lng": -44.962, "coordAprox": true,
+      "descricao": "Cachoeira na beira da Rio-Santos, perto da Praia do Prumirim. Rolê rápido.",
+      "wikilocUrl": "", "gpxNoRelogio": false,
+      "distanciaKm": null, "duracaoMin": 45,
+      "dificuldade": "facil", "acesso": "carro", "precisaGuia": false,
+      "status": "quero-ir", "tags": ["banho", "rapido"]
+    },
+    {
+      "id": "trilha-7-praias",
+      "nome": "Trilha das 7 Praias",
+      "tipo": "trilha",
+      "regiao": "ubatuba-sul",
+      "lat": -23.520, "lng": -45.198, "coordAprox": true,
+      "descricao": "Começa na Praia da Lagoinha e vai encadeando praias até a Fortaleza. Rolê de dia todo, dá pra fazer só um trecho.",
+      "wikilocUrl": "", "gpxNoRelogio": false,
+      "distanciaKm": null, "duracaoMin": 360,
+      "dificuldade": "moderada", "acesso": "a-pe", "precisaGuia": false,
+      "status": "quero-ir", "tags": ["praias", "dia-todo"]
+    },
+    {
+      "id": "trilha-saco-das-bananas",
+      "nome": "Caçandoca + Saco das Bananas",
+      "tipo": "trilha",
+      "regiao": "ubatuba-sul",
+      "lat": -23.564, "lng": -45.222, "coordAprox": true,
+      "descricao": "Caçandoca é território quilombola; dela saem trilhas para Saco das Bananas, Praia do Deserto e Bonete.",
+      "wikilocUrl": "", "gpxNoRelogio": false,
+      "distanciaKm": null, "duracaoMin": 180,
+      "dificuldade": "moderada", "acesso": "a-pe", "precisaGuia": false,
+      "status": "quero-ir", "tags": ["quilombo", "praia-selvagem"]
+    },
+    {
+      "id": "sununga-gruta-que-chora",
+      "nome": "Sununga + Gruta que Chora",
+      "tipo": "praia",
+      "regiao": "ubatuba-sul",
+      "lat": -23.508, "lng": -45.140, "coordAprox": true,
+      "descricao": "Acesso pela Praia do Lázaro. Gruta famosa e dá pra emendar a Praia Domingas.",
+      "wikilocUrl": "", "gpxNoRelogio": false,
+      "distanciaKm": null, "duracaoMin": 60,
+      "dificuldade": "facil", "acesso": "a-pe", "precisaGuia": false,
+      "status": "quero-ir", "tags": ["gruta", "rapido"]
+    },
+
+    {
+      "id": "wikiloc-264769739",
+      "nome": "Trilha Wikiloc 264769739 (renomear)",
+      "tipo": "trilha",
+      "regiao": "",
+      "lat": null, "lng": null, "coordAprox": true,
+      "descricao": "Link enviado pelo usuário. Completar nome, região, distância e coordenadas de início.",
+      "wikilocUrl": "https://loc.wiki/t/264769739?h=2mw7bb43op&wa=so&la=pt", "gpxNoRelogio": false,
+      "distanciaKm": null, "duracaoMin": null,
+      "dificuldade": null, "acesso": null, "precisaGuia": false,
+      "status": "quero-ir", "tags": ["completar"]
+    },
+    {
+      "id": "wikiloc-280238144",
+      "nome": "Trilha Wikiloc 280238144 (renomear)",
+      "tipo": "trilha",
+      "regiao": "",
+      "lat": null, "lng": null, "coordAprox": true,
+      "descricao": "Link enviado pelo usuário. Completar nome, região, distância e coordenadas de início.",
+      "wikilocUrl": "https://loc.wiki/t/280238144?h=2mw7bb43op&wa=so&la=pt", "gpxNoRelogio": false,
+      "distanciaKm": null, "duracaoMin": null,
+      "dificuldade": null, "acesso": null, "precisaGuia": false,
+      "status": "quero-ir", "tags": ["completar"]
+    },
+
+    {
+      "id": "apoio-paraty-mirim",
+      "nome": "Paraty-Mirim (estacionamento + barcos pro Mamanguá)",
+      "tipo": "apoio",
+      "regiao": "paraty-mirim",
+      "lat": -23.258, "lng": -44.660, "coordAprox": true,
+      "descricao": "Vila a ~17 km de Paraty, estrada de terra (pode fechar com chuva). Estacionamentos de moradores e barcos pro Mamanguá. Tem ônibus saindo da rodoviária de Paraty.",
+      "acesso": "carro",
+      "status": "quero-ir", "tags": ["logistica", "barco"]
+    },
+    {
+      "id": "apoio-centro-paraty",
+      "nome": "Centro de Paraty (mercado, farmácia, cais)",
+      "tipo": "apoio",
+      "regiao": "paraty",
+      "lat": -23.219, "lng": -44.714, "coordAprox": true,
+      "descricao": "Reabastecimento, rodoviária e cais (barcos pra praias e, se a estrada fechar, pro Mamanguá). Réveillon principal na Praia do Pontal.",
+      "acesso": "carro",
+      "status": "quero-ir", "tags": ["logistica", "reveillon"]
+    },
+    {
+      "id": "apoio-centro-ubatuba",
+      "nome": "Centro de Ubatuba (mercado, farmácia, rodoviária)",
+      "tipo": "apoio",
+      "regiao": "ubatuba-centro",
+      "lat": -23.434, "lng": -45.084, "coordAprox": true,
+      "descricao": "Ponto de reabastecimento do lado paulista.",
+      "acesso": "carro",
+      "status": "quero-ir", "tags": ["logistica"]
+    }
+  ]
+}

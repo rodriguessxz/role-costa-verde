@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0f4c5c" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="icon" href="icons/icon-192.png" />
+    <link rel="apple-touch-icon" href="icons/icon-192.png" />
+    <title>Rolê Costa Verde</title>
+  </head>
+  <body>
+    <header class="topbar">
+      <a href="#/mapa" class="brand">🌊 Rolê <span>Costa Verde</span></a>
+      <div class="topbar-right">
+        <span id="net-badge" class="badge badge-offline" hidden>offline · salvando local</span>
+        <a href="#/config" class="icon-btn" aria-label="Configurações">⚙️</a>
+      </div>
+    </header>
+
+    <main id="app"></main>
+
+    <nav class="tabbar" aria-label="Navegação">
+      <a href="#/mapa" data-tab="mapa"><span>🗺️</span>Mapa</a>
+      <a href="#/lista" data-tab="lista"><span>📋</span>Lista</a>
+      <a href="#/roleta" data-tab="roleta" class="tab-roleta"><span>🎲</span>Roleta</a>
+      <a href="#/gastos" data-tab="gastos"><span>💸</span>Gastos</a>
+      <a href="#/novo" data-tab="novo"><span>➕</span>Novo</a>
+    </nav>
+
+    <div id="toast" role="status" aria-live="polite"></div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
