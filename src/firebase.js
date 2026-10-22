@@ -46,9 +46,20 @@ export async function entrarComGoogle() {
   }
 }
 
+/**
+ * Encerra a sessão e apaga o cache offline deste aparelho (os dados da viagem não
+ * ficam guardados no celular de quem saiu). Recarrega o app no fim.
+ */
 export async function sair() {
-  const { auth, authMod } = await iniciarFirebase();
+  const { db, auth, fs, authMod } = await iniciarFirebase();
   await authMod.signOut(auth);
+  try {
+    await fs.terminate(db);
+    await fs.clearIndexedDbPersistence(db);
+  } catch (e) {
+    console.warn('[firebase] não consegui limpar o cache local', e);
+  }
+  location.reload();
 }
 
 /** Observa o usuário logado. cb(user|null) */

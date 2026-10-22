@@ -1,8 +1,8 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Só os e-mails da dupla podem ler e escrever.
-    // Para liberar o parça, troque o e-mail de exemplo e publique as regras de novo.
+    // Só os e-mails da dupla (verificados no Google) podem ler e escrever.
+    // Para trocar alguém: edite a lista e rode `firebase deploy --only firestore:rules`.
     function daDupla() {
       return request.auth != null
         && request.auth.token.email_verified == true
@@ -12,8 +12,32 @@ service cloud.firestore {
         ];
     }
 
+    // Coleções que o app usa dentro de trips/{tripId}
+    function colecaoConhecida(c) {
+      return c in ['lugares', 'gastos', 'config', 'dias', 'atividades', 'notas', 'ideias', 'listas', 'itens', 'comentarios'];
+    }
+
+    // Validação básica de tamanho/tipo (só olha campos que vierem no documento)
+    function textoCurto(d, k, max) {
+      return !(k in d) || d[k] == null || (d[k] is string && d[k].size() <= max);
+    }
+    function dadosValidos(c, d) {
+      return d.keys().size() <= 100
+        && textoCurto(d, 'nome', 200)
+        && textoCurto(d, 'titulo', 300)
+        && textoCurto(d, 'descricao', 5000)
+        && textoCurto(d, 'texto', 20000)
+        && textoCurto(d, 'observacoes', 5000)
+        && (c != 'itens' || (d.texto is string && d.listaId is string))
+        && (c != 'comentarios' || (d.texto is string && d.lugarId is string))
+        && (c != 'atividades' || (d.titulo is string && d.diaId is string))
+        && (c != 'lugares' || d.nome is string);
+    }
+
     match /trips/{tripId}/{colecao}/{docId} {
-      allow read, write: if daDupla();
+      allow read, delete: if daDupla() && colecaoConhecida(colecao);
+      allow create, update: if daDupla() && colecaoConhecida(colecao)
+        && dadosValidos(colecao, request.resource.data);
     }
 
     // Todo o resto fica fechado

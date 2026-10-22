@@ -1,5 +1,6 @@
 // Helpers de UI compartilhados entre as views.
 import { buscarLugares } from './lib/geocode.js';
+import { tempoRelativo } from './lib/tempo.js';
 
 /** Escapa HTML (todo texto vindo de dados passa por aqui). */
 export const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({
@@ -30,12 +31,22 @@ export const TIPOS = {
   trilha: { rotulo: 'Trilha', emoji: '🥾', cor: '#2d6a4f' },
   cachoeira: { rotulo: 'Cachoeira', emoji: '💦', cor: '#1d7fa8' },
   praia: { rotulo: 'Praia', emoji: '🏖️', cor: '#d4a017' },
+  restaurante: { rotulo: 'Comer', emoji: '🍽️', cor: '#8e5ea2' },
+  hospedagem: { rotulo: 'Hospedagem', emoji: '🏠', cor: '#3d5a80' },
   apoio: { rotulo: 'Apoio', emoji: '🛒', cor: '#6c757d' }
 };
 
+/** Subtipos de "apoio" (mercado, posto, estacionamento...). */
+export const SUBTIPOS = { mercado: '🛒 Mercado', posto: '⛽ Posto', estacionamento: '🅿️ Estacionamento', servico: '💊 Serviço', outro: '📦 Outro' };
+
+// Os valores 'quero-ir' e 'fui' já existiam nos dados: seguem valendo (fui = visitado).
 export const STATUS = {
+  ideia: { rotulo: 'Ideia', emoji: '💡' },
+  avaliar: { rotulo: 'Avaliar', emoji: '🔍' },
   'quero-ir': { rotulo: 'Quero ir', emoji: '✨' },
-  fui: { rotulo: 'Fui!', emoji: '✅' },
+  planejado: { rotulo: 'Planejado', emoji: '📌' },
+  confirmado: { rotulo: 'Confirmado', emoji: '✅' },
+  fui: { rotulo: 'Visitado', emoji: '🏁' },
   descartado: { rotulo: 'Descartado', emoji: '🚫' }
 };
 
@@ -67,8 +78,8 @@ export function formatarDuracao(min) {
 
 /* ---------- Filtros compartilhados (mapa + lista) ---------- */
 
-const FILTRO_KEY = 'role:filtros';
-const padrao = { tipos: Object.keys(TIPOS), status: ['quero-ir', 'fui'], busca: '' };
+const FILTRO_KEY = 'role:filtros2'; // v2: ganhou tipos e status novos
+const padrao = { tipos: Object.keys(TIPOS), status: Object.keys(STATUS).filter((k) => k !== 'descartado'), busca: '' };
 
 export function lerFiltros() {
   try { return { ...padrao, ...JSON.parse(localStorage.getItem(FILTRO_KEY) || '{}') }; }
@@ -90,7 +101,7 @@ export function aplicarFiltros(lugares, f) {
 
 /** Seleção "solo": só o chip tocado fica ligado; tocar no mesmo de novo volta pro padrão. */
 const TODOS_TIPOS = Object.keys(TIPOS);
-const STATUS_ATIVOS = ['quero-ir', 'fui'];
+const STATUS_ATIVOS = Object.keys(STATUS).filter((k) => k !== 'descartado');
 const mesmo = (a, b) => a.length === b.length && a.every((x) => b.includes(x));
 
 /** Barra de chips de filtro. onChange(f) é chamado a cada toque. */
@@ -170,3 +181,83 @@ export function campoBusca({ placeholder = 'Buscar lugar no mapa…', onEscolher
   });
   return el;
 }
+
+/* ---------- Componentes reutilizáveis ---------- */
+
+/** Estado vazio com orientação. `acao` = { rotulo, href } ou { rotulo, id } (botão). */
+export function vazio({ emoji = '🌿', titulo, texto = '', acao }) {
+  const botao = acao
+    ? (acao.href
+      ? `<a class="btn btn-sm" href="${esc(acao.href)}">${esc(acao.rotulo)}</a>`
+      : `<button class="btn btn-sm" data-vazio="${esc(acao.id || '')}">${esc(acao.rotulo)}</button>`)
+    : '';
+  return `<div class="estado-vazio"><div class="estado-vazio-emoji">${emoji}</div><h3>${esc(titulo)}</h3>${texto ? `<p>${esc(texto)}</p>` : ''}${botao}</div>`;
+}
+
+/** "criado por X · atualizado há 2 h por Y" — transparência de quem mexeu. */
+export function quemMexeu(d) {
+  const partes = [];
+  if (d.criadoPor) partes.push(`criado por ${esc(d.criadoPor)}`);
+  if (d.atualizadoEm && d.atualizadoEm !== d.criadoEm) {
+    partes.push(`atualizado ${tempoRelativo(d.atualizadoEm)}${d.atualizadoPor ? ` por ${esc(d.atualizadoPor)}` : ''}`);
+  } else if (d.criadoEm) partes.push(tempoRelativo(d.criadoEm));
+  return partes.join(' · ');
+}
+
+export function debounce(fn, ms = 300) {
+  let t;
+  return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); };
+}
+
+/**
+ * Folha de baixo (bottom sheet) que vira janela centralizada no desktop.
+ * `corpo` é uma string HTML. Devolve { el, fechar }. Esc, toque fora ou ✕ fecham.
+ */
+export function abrirModal({ titulo, corpo, onFechar }) {
+  const raiz = document.getElementById('modal-root');
+  const el = html(`<div class="modal" role="dialog" aria-modal="true" aria-label="${esc(titulo)}">
+    <div class="modal-fundo"></div>
+    <div class="modal-folha">
+      <div class="modal-cab"><h2>${esc(titulo)}</h2><button class="icon-btn" data-fechar aria-label="Fechar">✕</button></div>
+      <div class="modal-corpo">${corpo}</div>
+    </div>
+  </div>`);
+  const fechar = () => {
+    document.removeEventListener('keydown', teclas);
+    el.remove();
+    document.body.classList.toggle('sem-scroll', raiz.children.length > 0);
+    onFechar?.();
+  };
+  const teclas = (e) => { if (e.key === 'Escape') fechar(); };
+  el.querySelector('.modal-fundo').addEventListener('click', fechar);
+  el.querySelector('[data-fechar]').addEventListener('click', fechar);
+  document.addEventListener('keydown', teclas);
+  raiz.append(el);
+  document.body.classList.add('sem-scroll');
+  el.querySelector('input:not([type=hidden]), textarea, select')?.focus({ preventScroll: true });
+  return { el, fechar };
+}
+
+/** Confirmação em modal (window.confirm trava em PWA). Resolve true/false. */
+export function confirmar({ titulo, texto = '', rotuloOk = 'Confirmar', perigo = false }) {
+  return new Promise((resolve) => {
+    let resposta = false;
+    const { el, fechar } = abrirModal({
+      titulo,
+      corpo: `${texto ? `<p>${esc(texto)}</p>` : ''}<div class="acoes">
+        <button class="btn btn-sec" data-nao>Cancelar</button>
+        <button class="btn ${perigo ? 'btn-perigo-cheio' : ''}" data-sim>${esc(rotuloOk)}</button></div>`,
+      onFechar: () => resolve(resposta)
+    });
+    el.querySelector('[data-nao]').addEventListener('click', fechar);
+    el.querySelector('[data-sim]').addEventListener('click', () => { resposta = true; fechar(); });
+  });
+}
+
+/** <option>s a partir de um objeto {chave: rotulo | {rotulo}}. */
+export const opcoesSelect = (obj, atual, vazioRotulo) =>
+  (vazioRotulo !== undefined ? `<option value="">${esc(vazioRotulo)}</option>` : '') +
+  Object.entries(obj).map(([k, v]) => `<option value="${esc(k)}" ${k === atual ? 'selected' : ''}>${esc(typeof v === 'string' ? v : `${v.emoji || ''} ${v.rotulo}`.trim())}</option>`).join('');
+
+/** Curtidas guardadas como mapa { uid: true|false } (assim dois "curtir" ao mesmo tempo não se sobrescrevem). */
+export const contarCurtidas = (c) => (Array.isArray(c) ? c.length : Object.values(c || {}).filter(Boolean).length);

@@ -6,7 +6,8 @@ import { TRIP_ID } from './firebase-config.js';
 import { firebaseAtivo, iniciarFirebase } from './firebase.js';
 
 const LS_PREFIX = 'role:';
-const COLECOES = ['lugares', 'gastos', 'config'];
+// lugares/gastos/config já existiam; as demais são do módulo de planejamento (compatível: só coleções novas)
+const COLECOES = ['lugares', 'gastos', 'config', 'dias', 'atividades', 'notas', 'ideias', 'listas', 'itens', 'comentarios'];
 
 // Estado em memória + ouvintes por coleção
 const cache = Object.fromEntries(COLECOES.map((c) => [c, []]));
@@ -20,6 +21,21 @@ export const getModo = () => modo;
 
 function emitir(colecao) {
   for (const cb of ouvintes[colecao]) cb(cache[colecao]);
+  window.dispatchEvent(new CustomEvent('sync-mudou'));
+}
+
+/** Quem está editando (gravado em criadoPor/atualizadoPor). */
+function autor() {
+  const u = window.__usuario;
+  return u ? (u.displayName || u.email || 'alguém') : 'local';
+}
+
+let falhas = 0;
+
+/** Estado de sincronização: quantos registros ainda não subiram e se houve falha. */
+export function statusSync() {
+  const pendentes = COLECOES.reduce((n, c) => n + cache[c].filter((x) => x._pendente).length, 0);
+  return { modo, pendentes, falhas, online: navigator.onLine };
 }
 
 function novoId(prefixo = 'id') {
@@ -75,12 +91,23 @@ export async function iniciarNuvem() {
       { includeMetadataChanges: true },
       (snap) => {
         cache[c] = snap.docs.map((d) => ({ id: d.id, ...d.data(), _pendente: d.metadata.hasPendingWrites }));
+        if (!snap.metadata.hasPendingWrites) falhas = 0;
         emitir(c);
       },
-      (err) => console.error(`[store] erro ao ouvir ${c}`, err)
+      (err) => {
+        console.error(`[store] erro ao ouvir ${c}`, err);
+        if (err.code === 'permission-denied') window.dispatchEvent(new CustomEvent('acesso-negado'));
+      }
     );
     cancelarSnapshots.push(cancelar);
   }
+}
+
+/** Esvazia tudo em memória (usado ao sair ou quando o acesso é negado). */
+export function desligar() {
+  pararNuvem();
+  for (const c of COLECOES) cache[c] = [];
+  COLECOES.forEach(emitir);
 }
 
 function pararNuvem() {
@@ -111,7 +138,8 @@ function limpar(obj) {
 }
 
 export async function adicionar(colecao, dados, id = novoId(colecao.slice(0, 3))) {
-  const doc = { ...limpar(dados), atualizadoEm: new Date().toISOString() };
+  const agora = new Date().toISOString();
+  const doc = { ...limpar(dados), criadoEm: agora, criadoPor: autor(), atualizadoEm: agora, atualizadoPor: autor() };
   if (modo === 'nuvem') {
     const { db, fs } = await iniciarFirebase();
     // Não damos await no set: offline ele resolve só quando sincroniza.
@@ -125,7 +153,7 @@ export async function adicionar(colecao, dados, id = novoId(colecao.slice(0, 3))
 }
 
 export async function atualizar(colecao, id, parcial) {
-  const mudancas = { ...limpar(parcial), atualizadoEm: new Date().toISOString() };
+  const mudancas = { ...limpar(parcial), atualizadoEm: new Date().toISOString(), atualizadoPor: autor() };
   if (modo === 'nuvem') {
     const { db, fs } = await iniciarFirebase();
     fs.setDoc(fs.doc(db, 'trips', TRIP_ID, colecao, id), mudancas, { merge: true }).catch(avisarErro);
@@ -185,6 +213,20 @@ export function dadosLocais() {
 }
 
 function avisarErro(e) {
+  falhas += 1;
   console.error('[store]', e);
+  window.dispatchEvent(new CustomEvent('sync-mudou'));
   window.dispatchEvent(new CustomEvent('store-erro', { detail: e }));
+}
+
+/** Assina várias coleções de uma vez; cb() roda uma vez por "rodada" de mudanças (e já na largada). */
+export function assinarVarias(colecoes, cb) {
+  let agendado = false;
+  const rodar = () => {
+    if (agendado) return;
+    agendado = true;
+    queueMicrotask(() => { agendado = false; cb(); });
+  };
+  const cancelar = colecoes.map((c) => assinar(c, rodar));
+  return () => cancelar.forEach((f) => f());
 }

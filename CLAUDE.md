@@ -210,3 +210,25 @@ roleta, racha de gastos, checklist pré-trilha (dentro da ficha), config, PWA of
 - Completar as 2 trilhas do Wikiloc (tag `completar`) e conferir coordenadas aproximadas.
 - Fase 3: diário com fotos, tábua de marés, resumo da trip.
 - Sem `window.confirm/alert` (travam em PWA): confirmação é por "toque duas vezes".
+
+## Evolução "sistema completo" (22/10/2026)
+
+O app deixou de ser "um mapa com ferramentas" e virou o painel privado da viagem. Tudo continua em JS puro + Firestore.
+
+- **Login obrigatório** (`src/views/login.js`, `src/main.js`): com Firebase configurado nada aparece antes do Google login.
+  A autorização real é das `firestore.rules` (lista de 2 e-mails + validação de tamanho/tipo). E-mail fora da lista → tela "acesso negado".
+  Sair (`firebase.js → sair`) apaga o cache offline do aparelho. `?local` só existe no `npm run dev` (modo local de desenvolvimento).
+- **Módulos** (`src/nav.js`): Início, Roteiro, Explorar, Lugares, Mapa, Anotações, Ideias, Checklist, Gastos, Roleta, Config (+ Busca global e "Mais").
+  Barra de baixo no celular (Início · Lugares · Explorar · Roteiro · Mais), barra lateral a partir de 900px. Views carregadas sob demanda.
+- **Novas coleções** em `trips/{id}/…`: `dias`, `atividades`, `notas`, `ideias`, `listas`, `itens`, `comentarios`
+  (as antigas `lugares`, `gastos`, `config` seguem iguais; `config/viagem` guarda nome e datas). Todo doc ganha `criadoPor/criadoEm/atualizadoPor/atualizadoEm` no `store.js`.
+- **Lugares**: status agora `ideia · avaliar · quero-ir · planejado · confirmado · fui (=visitado) · descartado`; tipos novos `restaurante` e `hospedagem`;
+  `apoio` tem `subtipo`; campos novos (favorito, prioridade, endereço, horário, preço, estrutura, regras, fonte, observações...).
+- **Explorar** (`views/explorar.js`, `lib/osm.js`, `lib/overpass.js`, `lib/geocode.js`): busca rápida (Photon) + completa (Overpass) em paralelo, mescladas.
+  Fontes gratuitas e sem chave; o Overpass vive ocupado, por isso a busca rápida aparece primeiro e o app aceita ficar só com ela.
+  Campo que a fonte não traz aparece como "indisponível" (nunca inventado). Rota de carro real: OSRM demo (`lib/rotas.js`), sempre rotulada como estimativa.
+- **Colaboração sem sobrescrever**: `lib/conflito.js` + `src/edicao.js` só gravam os campos que a pessoa mudou e perguntam se o outro mexeu no mesmo campo.
+  Curtidas das ideias são um mapa `{uid: bool}` (merge de campo, sem perda).
+- **Sync**: chip no topo (sincronizado / enviando / offline / falha) a partir de `statusSync()` no store.
+- Lógica nova e pura em `src/lib/` (`conflito`, `tempo`, `roteiro`, `osm`, `geocode`) com testes em `src/lib/sistema.test.js`.
+- Pendências conhecidas: fotos (precisa de Firebase Storage/plano), reordenar por arrastar (hoje é ▲▼ + "mover para"), avaliações de lugares (fonte aberta não tem).
