@@ -771,3 +771,51 @@ body.sem-scroll { overflow: hidden; }
 @media (min-width: 900px) and (prefers-color-scheme: dark) { .tab-central { color: var(--coral); } }
 
 .aviso-suave { background: var(--areia); padding: 8px 12px; border-radius: 12px; }
+
+/* ---------- Contatos (funil dos campings) ---------- */
+.canais { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.canal-op input { position: absolute; opacity: 0; pointer-events: none; }
+.canal-op span {
+  display: block; text-align: center; padding: 10px 2px; border-radius: 14px; font-size: .74rem; font-weight: 700; line-height: 1.6;
+  border: 2px solid var(--borda); background: var(--bg-2); color: var(--texto); cursor: pointer;
+}
+.canal-op input:checked + span { border-color: var(--mar-2); background: color-mix(in srgb, var(--mar-2) 14%, var(--bg-2)); }
+.canal-op input:focus-visible + span { outline: 3px solid var(--amarelo); }
+.contato-lugar { margin: 0 0 8px; font-weight: 700; }
+.bloco-contato { padding: 14px; border: 1.5px solid color-mix(in srgb, var(--mar-2) 40%, var(--borda)); border-radius: 24px; background: color-mix(in srgb, var(--mar-2) 6%, var(--bg-2)); }
+.bloco-contato h3 { display: flex; align-items: center; gap: 8px; }
+.bloco-contato h3 .ico { width: 18px; height: 18px; color: var(--destaque); }
+.chips-etapa { margin-bottom: 4px; }
+.resumo-contato { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; margin: 8px 0; }
+.resumo-contato > div { background: var(--bg-2); border: 1px solid var(--borda); border-radius: 16px; padding: 10px 12px; display: flex; flex-direction: column; }
+.resumo-contato span { font-size: .72rem; font-weight: 700; color: var(--texto-2); text-transform: uppercase; letter-spacing: .06em; }
+.resumo-contato b { font-family: var(--font-display); font-size: 1.15rem; }
+.resumo-contato small { color: var(--texto-2); }
+.resumo-contato .alerta { border-color: #d64545; }
+.resumo-contato .alerta b { color: #d64545; }
+.acoes-contato { margin: 8px 0; }
+.lembrete-registro { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 10px 12px; margin: 0 0 10px; border-radius: 16px; background: color-mix(in srgb, var(--amarelo) 22%, var(--bg-2)); font-weight: 600; font-size: .9rem; }
+.lembrete-registro span { flex: 1 1 100%; }
+.linha-tempo { list-style: none; margin: 14px 0 0; padding: 0; display: flex; flex-direction: column; }
+.linha-tempo li { display: flex; gap: 12px; padding: 10px 0; border-top: 1px solid var(--borda); cursor: pointer; }
+.lt-ponto { flex: none; width: 36px; height: 36px; border-radius: 12px; background: var(--areia); display: grid; place-items: center; font-size: 1.1rem; }
+.lt-corpo { min-width: 0; flex: 1; }
+.lt-topo { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.lt-topo small, .lt-corpo small { color: var(--texto-2); }
+.lt-corpo p { margin: 4px 0 0; line-height: 1.4; white-space: pre-line; }
+.lt-valor { font-weight: 800; color: var(--mata); }
+.lt-quem { display: block; margin-top: 2px; font-size: .72rem; }
+.contato-card { background: var(--bg-2); border: 1px solid var(--borda); border-radius: 22px; padding: 12px; box-shadow: var(--sombra); border-left: 5px solid var(--cor); }
+.contato-topo { display: flex; gap: 12px; align-items: center; text-decoration: none; }
+.contato-info { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.contato-info b { font-family: var(--font-display); line-height: 1.2; }
+.contato-info small { color: var(--texto-2); }
+.contato-valor { margin: 8px 0 0; color: var(--mata); }
+.contato-resumo { margin: 4px 0 0; color: var(--texto-2); font-size: .88rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.contato-retorno { margin: 6px 0 0; font-weight: 700; font-size: .85rem; color: var(--destaque); }
+.contato-retorno.atrasado { color: #d64545; }
+.retornos .lista-simples { border-color: #d64545; }
+.pin.etapa-reservado { border-color: #2fae72; }
+.pin.etapa-sem-vaga, .pin.etapa-sem-interesse { opacity: .5; filter: grayscale(.7); }
+.pin.etapa-contatado, .pin.etapa-aguardando, .pin.etapa-respondeu { border-color: var(--amarelo); }
+.pin.etapa-a-contatar { border-color: var(--coral); }

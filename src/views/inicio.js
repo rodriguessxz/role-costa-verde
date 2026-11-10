@@ -4,6 +4,7 @@ import { getViagem } from '../viagem.js';
 import { ico } from '../icons.js';
 import { esc, html, toast, tipoInfo, STATUS, TIPOS, vazio, abrirModal, contarCurtidas } from '../ui.js';
 import { diasAte, dataCurta, tempoRelativo } from '../lib/tempo.js';
+import { etapaDoLugar, interacoesDoLugar, resumoContatos, situacaoRetorno } from '../lib/contatos.js';
 import { ordenarDias, atividadesDoDia } from '../lib/roteiro.js';
 
 const PENDENTES = ['ideia', 'avaliar', 'quero-ir', 'planejado'];
@@ -53,7 +54,15 @@ function desenhar(el) {
     .sort((a, b) => (b.prioridade || 0) - (a.prioridade || 0) || Number(!!b.favorito) - Number(!!a.favorito));
   const confirmados = lugares.filter((l) => ['planejado', 'confirmado'].includes(l.status)).length;
   const feitosCheck = itens.filter((i) => i.feito).length;
-  const reservasPendentes = lugares.filter((l) => l.tipo === 'camping' && l.reservaNecessaria && !['confirmado', 'fui', 'descartado'].includes(l.status)).length;
+  // Funil de contato dos campings: quantos estão em andamento, quantos já reservados e retornos que vencem
+  const interacoes = listar('interacoes');
+  const campings = lugares.filter((l) => l.tipo === 'camping' && l.status !== 'descartado');
+  const emContato = campings.filter((l) => ['a-contatar', 'contatado', 'aguardando', 'respondeu'].includes(etapaDoLugar(l, interacoesDoLugar(interacoes, l.id)))).length;
+  const reservados = campings.filter((l) => l.etapaContato === 'reservado').length;
+  const retornosUrgentes = campings.filter((l) => {
+    const r = resumoContatos(interacoesDoLugar(interacoes, l.id));
+    return r.retornoEm && ['atrasado', 'hoje'].includes(situacaoRetorno(r.retornoEm)) && ['a-contatar', 'contatado', 'aguardando', 'respondeu'].includes(etapaDoLugar(l, interacoesDoLugar(interacoes, l.id)));
+  }).length;
   const ideiasPendentes = ideias.filter((i) => ['nova', 'avaliando'].includes(i.status || 'nova'));
   const prox = proximas(dias, atividades, lugares);
   const porTipo = Object.entries(TIPOS)
@@ -96,7 +105,7 @@ function desenhar(el) {
         <a class="indicador" href="#/roteiro"><b>${atividades.length}</b><span>atividades</span><small>em ${dias.length} ${dias.length === 1 ? 'dia' : 'dias'}</small></a>
         <a class="indicador" href="#/checklist"><b>${itens.length ? `${feitosCheck}/${itens.length}` : '—'}</b><span>itens prontos</span>
           <i class="barra"><u style="width:${itens.length ? Math.round((feitosCheck / itens.length) * 100) : 0}%"></u></i></a>
-        <a class="indicador ${reservasPendentes ? 'alerta' : ''}" href="#/lugares/tipo/camping"><b>${reservasPendentes}</b><span>reservas de camping</span><small>${reservasPendentes ? 'a confirmar' : 'nada pendente'}</small></a>
+        <a class="indicador ${retornosUrgentes ? 'alerta' : ''}" href="#/contatos"><b>${reservados}/${campings.length}</b><span>campings reservados</span><small>${retornosUrgentes ? `${retornosUrgentes} retorno${retornosUrgentes > 1 ? 's' : ''} para fazer` : emContato ? `${emContato} em contato` : 'nenhum contato ainda'}</small></a>
       </div>
     </section>
 
@@ -160,5 +169,5 @@ function ideiaRapida() {
 export function render(container) {
   const el = html('<section class="pagina inicio"></section>');
   container.append(el);
-  return assinarVarias(['lugares', 'dias', 'atividades', 'notas', 'ideias', 'itens', 'config'], () => desenhar(el));
+  return assinarVarias(['lugares', 'dias', 'atividades', 'notas', 'ideias', 'itens', 'config', 'interacoes'], () => desenhar(el));
 }

@@ -7,7 +7,7 @@ import { firebaseAtivo, iniciarFirebase } from './firebase.js';
 
 const LS_PREFIX = 'role:';
 // lugares/gastos/config já existiam; as demais são do módulo de planejamento (compatível: só coleções novas)
-const COLECOES = ['lugares', 'gastos', 'config', 'dias', 'atividades', 'notas', 'ideias', 'listas', 'itens', 'comentarios'];
+const COLECOES = ['lugares', 'gastos', 'config', 'dias', 'atividades', 'notas', 'ideias', 'listas', 'itens', 'comentarios', 'interacoes'];
 
 // Estado em memória + ouvintes por coleção
 const cache = Object.fromEntries(COLECOES.map((c) => [c, []]));

@@ -9,7 +9,7 @@ import { buscarLugares, buscaRapida } from '../lib/geocode.js';
 import { CENTRO_REGIAO, posicaoAtual, linkGoogleMaps, formatarKm } from '../lib/geo.js';
 import { tempoRelativo } from '../lib/tempo.js';
 import { guardarExplorar, lerExplorar } from '../explorar-estado.js';
-import { modalSalvarResultado, salvarResultado, abrirAdicionarAoRoteiro } from '../acoes.js';
+import { modalSalvarResultado, salvarResultado, abrirAdicionarAoRoteiro, salvarParaContatar } from '../acoes.js';
 import { ico } from '../icons.js';
 import { esc, html, toast, tipoInfo, vazio, REGIOES, debounce } from '../ui.js';
 
@@ -281,6 +281,7 @@ export function render(container) {
         ${salvo
     ? `<a class="btn btn-sm btn-sec" href="#/lugar/${encodeURIComponent(salvo.id)}">Abrir ficha</a>`
     : '<button class="btn btn-sm" data-acao="salvar">Salvar</button>'}
+        ${['camping', 'hospedagem', 'restaurante'].includes(r.categoria) ? '<button class="btn btn-sm" data-acao="contatar">📞 Contatar</button>' : ''}
         <button class="btn btn-sm btn-sec" data-acao="roteiro">+ Roteiro</button>
         ${salvo ? '' : '<button class="btn btn-sm btn-sec" data-acao="ideia">💡 Ideia</button>'}
         <a class="btn btn-sm btn-sec" href="${linkGoogleMaps(r)}" target="_blank" rel="noopener">🧭 Rota</a>
@@ -367,6 +368,12 @@ export function render(container) {
     if (!r) return;
     if (a === 'ver-mapa') return destacar(r.osmId, false);
     if (a === 'salvar') { await modalSalvarResultado(r); pintarLista(); }
+    if (a === 'contatar') {
+      const id = await salvarParaContatar(r);
+      toast('📞 Salvo em Contatos (a contatar)');
+      location.hash = `#/lugar/${encodeURIComponent(id)}`;
+      return;
+    }
     if (a === 'ideia') {
       await salvarResultado(r, { status: 'ideia' });
       toast('💡 Salvo como ideia em Lugares');

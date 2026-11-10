@@ -9,6 +9,8 @@ import {
   formatarDuracao, precisaCompletar, quemMexeu, confirmar, vazio, opcoesSelect
 } from '../ui.js';
 import { tempoRelativo } from '../lib/tempo.js';
+import { interacoesDoLugar } from '../lib/contatos.js';
+import { htmlBlocoContato, ligarBlocoContato, mostraBlocoContato } from '../contatos.js';
 
 // Checklist pré-trilha (fica salvo dentro do próprio lugar)
 const CHECKLIST = {
@@ -34,7 +36,7 @@ export function render(container, { nome, params }) {
   const id = params[0];
   const editando = nome === 'editar';
   // Re-renderiza quando o dado muda (ex.: o outro viajante editou do celular dele)
-  const cancelar = assinarVarias(['lugares', 'atividades', 'dias', 'comentarios'], () => {
+  const cancelar = assinarVarias(['lugares', 'atividades', 'dias', 'comentarios', 'interacoes'], () => {
     const l = obter('lugares', id);
     // Não apaga o que a pessoa está digitando (formulário aberto ou observação em edição)
     if (l && editando && container.dataset.formAberto === id) return;
@@ -68,8 +70,8 @@ function ficha(l) {
     .sort((a, b) => String(a.criadoEm).localeCompare(String(b.criadoEm)));
   const dias = listar('dias');
   const noRoteiro = listar('atividades').filter((a) => a.lugarId === l.id);
-  const zap = l.contato ? l.contato.replace(/\D/g, '').replace(/^55/, '') : '';
-  const fone = l.telefone || l.contato;
+  const interacoes = interacoesDoLugar(listar('interacoes'), l.id);
+  const comContato = mostraBlocoContato(l, interacoes);
 
   const el = html(`<section class="pagina ficha" style="--cor:${t.cor}">
     <a href="#/lugares" class="voltar">${ico('voltar')} Lugares</a>
@@ -98,8 +100,6 @@ function ficha(l) {
       <a class="btn btn-sec" href="${linkWaze(l)}" target="_blank" rel="noopener">🚙 Waze</a>
       <a class="btn btn-sec" href="#/mapa/lugar/${encodeURIComponent(l.id)}">${ico('mapa')} No mapa</a>` : ''}
       ${urlSegura(l.wikilocUrl) ? `<a class="btn btn-wikiloc" href="${esc(l.wikilocUrl)}" target="_blank" rel="noopener">🥾 Wikiloc</a>` : ''}
-      ${zap ? `<a class="btn btn-sec" href="https://wa.me/55${esc(zap)}" target="_blank" rel="noopener">💬 WhatsApp</a>` : ''}
-      ${fone ? `<a class="btn btn-sec" href="tel:${esc(String(fone).replace(/[^\d+]/g, ''))}">📞 Ligar</a>` : ''}
     </div>
 
     ${l.descricao ? `<p class="descricao">${esc(l.descricao)}</p>` : ''}
@@ -137,6 +137,8 @@ function ficha(l) {
       return `<a class="linha-ativ" href="#/roteiro"><span class="linha-hora">${esc(a.horaInicio || '—')}</span><span class="linha-corpo"><b>${esc(d?.titulo || 'Sem dia')}</b><small>${a.confirmada ? 'confirmada' : a.alternativa ? 'plano B' : 'prevista'}</small></span></a>`;
     }).join('')}</div>` : ''}
 
+    ${comContato ? htmlBlocoContato(l, interacoes) : ''}
+
     <div class="bloco-simples">
       <h3>Minhas observações</h3>
       <textarea class="input" data-obs rows="3" placeholder="Anotações pessoais sobre este lugar (salvam ao sair do campo)">${esc(l.observacoes || '')}</textarea>
@@ -167,6 +169,8 @@ function ficha(l) {
       <button class="btn btn-sec" data-acao="aqui">📍 Estou aqui (corrigir posição)</button>
     </div>
   </section>`);
+
+  if (comContato) ligarBlocoContato(el, l, interacoes);
 
   // Favorito / compartilhar
   el.querySelector('[data-acao="favorito"]').addEventListener('click', () => alternarFavorito(l));
@@ -295,6 +299,10 @@ function formulario(l, container) {
         <label>Site<input class="input" name="site" type="url" inputmode="url" value="${esc(l.site)}"/></label>
       </div>
       <div class="grid2">
+        <label>E-mail<input class="input" name="email" type="email" inputmode="email" value="${esc(l.email)}"/></label>
+        <label>Instagram<input class="input" name="instagram" value="${esc(l.instagram)}" placeholder="@perfil"/></label>
+      </div>
+      <div class="grid2">
         <label>Latitude<input class="input" name="lat" type="number" inputmode="decimal" step="any" value="${l.lat ?? ''}"/></label>
         <label>Longitude<input class="input" name="lng" type="number" inputmode="decimal" step="any" value="${l.lng ?? ''}"/></label>
       </div>
@@ -353,6 +361,8 @@ function formulario(l, container) {
       horario: txt('horario'),
       telefone: txt('telefone'),
       site: txt('site'),
+      email: txt('email'),
+      instagram: txt('instagram'),
       fonteUrl: txt('fonteUrl'),
       fotoUrl: txt('fotoUrl'),
       tags: Number.isFinite(lat) && Number.isFinite(lng) && !l.nome.includes('(renomear)') ? tags.filter((t) => t !== 'completar') : tags,

@@ -7,7 +7,7 @@ import { ordenarDias, atividadesDoDia, proximaOrdem } from './lib/roteiro.js';
  * Cria um lugar a partir de um resultado do Explorar (Overpass) ou da busca por nome (Photon).
  * Não duplica: se o osmId já foi salvo, devolve o lugar existente.
  */
-export async function salvarResultado(r, { status = 'ideia', observacoes = '' } = {}) {
+export async function salvarResultado(r, { status = 'ideia', observacoes = '', extra = {} } = {}) {
   if (r.osmId) {
     const existente = listar('lugares').find((l) => l.osmId === r.osmId);
     if (existente) return existente.id;
@@ -31,7 +31,8 @@ export async function salvarResultado(r, { status = 'ideia', observacoes = '' } 
     fonte: r.osmId ? 'OpenStreetMap' : 'Busca por nome (OpenStreetMap)',
     fonteUrl: r.fonteUrl,
     // Preço, reserva e acesso quase nunca vêm da fonte: marcamos para confirmar, sem inventar nada.
-    tags: ['confirmar-dados']
+    tags: ['confirmar-dados'],
+    ...extra
   };
   if (r.pago === true) dados.preco = 'Pago (valor não informado na fonte)';
   if (r.pago === false) dados.preco = 'Gratuito segundo a fonte (confirmar)';
@@ -109,6 +110,17 @@ export function abrirAdicionarAoRoteiro({ lugarId = '', titulo = '', diaId: diaI
     fechar();
     toast('📌 Adicionado ao roteiro');
   });
+}
+
+/**
+ * "Salvar para contatar": guarda o resultado como lugar na etapa "a contatar" e devolve o id.
+ * Se o lugar já existia sem etapa de contato, entra no funil também.
+ */
+export async function salvarParaContatar(r) {
+  const id = await salvarResultado(r, { status: 'avaliar', extra: { etapaContato: 'a-contatar' } });
+  const existente = listar('lugares').find((l) => l.id === id);
+  if (existente && !existente.etapaContato) await atualizar('lugares', id, { etapaContato: 'a-contatar' });
+  return id;
 }
 
 /** Alterna favorito. */

@@ -8,6 +8,7 @@ export const MODULOS = [
   { id: 'explorar', rotulo: 'Explorar', icone: 'explorar', aba: 'explorar', desc: 'Achar lugares perto de um ponto' },
   { id: 'lugares', rotulo: 'Lugares', icone: 'lugares', aba: 'lugares', desc: 'Biblioteca de lugares salvos' },
   { id: 'mapa', rotulo: 'Mapa', icone: 'mapa', aba: 'mais', desc: 'Tudo que salvamos, no mapa' },
+  { id: 'contatos', rotulo: 'Contatos', icone: 'contato', aba: 'mais', desc: 'Funil de campings: conversas, valores e retornos' },
   { id: 'notas', rotulo: 'Anotações', icone: 'notas', aba: 'mais', desc: 'Dicas, logística e decisões' },
   { id: 'ideias', rotulo: 'Ideias', icone: 'ideias', aba: 'mais', desc: 'Rolês ainda não confirmados' },
   { id: 'checklist', rotulo: 'Checklist', icone: 'checklist', aba: 'mais', desc: 'Camping, trilha, carro e compras' },

@@ -2,7 +2,8 @@
 // Rotas: #/mapa · #/mapa/dia/:id (paradas do dia, na ordem) · #/mapa/lugar/:id (foca num lugar).
 import L from 'leaflet';
 import { assinarVarias, listar, obter } from '../store.js';
-import { modalSalvarResultado, abrirAdicionarAoRoteiro } from '../acoes.js';
+import { modalSalvarResultado, abrirAdicionarAoRoteiro, salvarParaContatar } from '../acoes.js';
+import { abrirRegistroContato } from '../contatos.js';
 import { lerExplorar } from '../explorar-estado.js';
 import { temCoord, posicaoAtual, linkGoogleMaps, CENTRO_REGIAO } from '../lib/geo.js';
 import { atividadesDoDia } from '../lib/roteiro.js';
@@ -19,7 +20,7 @@ let mostrarExplorar = true;
 /** Pin em gota, colorido pelo tipo. `rotulo` troca o emoji (ex.: número da parada). */
 function icone(l, { rotulo, extra = '' } = {}) {
   const t = tipoInfo(l.tipo);
-  const classes = ['pin', `pin-${l.status || 'quero-ir'}`, l.coordAprox ? 'pin-aprox' : '', extra].join(' ');
+  const classes = ['pin', `pin-${l.status || 'quero-ir'}`, l.coordAprox ? 'pin-aprox' : '', l.etapaContato ? `etapa-${l.etapaContato}` : '', extra].join(' ');
   return L.divIcon({
     className: '',
     html: `<div class="${classes}" style="--cor:${t.cor}"><span>${rotulo ?? t.emoji}</span></div>`,
@@ -44,6 +45,7 @@ function folhaLugar(l) {
     </div>
     <div class="acoes">
       <a class="btn" href="#/lugar/${encodeURIComponent(l.id)}">Ver ficha</a>
+      <button class="btn btn-sec" data-acao="contato">📞 Contato</button>
       <button class="btn btn-sec" data-acao="roteiro">+ Roteiro</button>
       <a class="btn btn-sec" href="${linkGoogleMaps(l)}" target="_blank" rel="noopener">🧭 Rota</a>
     </div>`;
@@ -56,7 +58,8 @@ function folhaResultado(r) {
       <div><div class="folha-nome">${esc(r.nome)}</div><div class="folha-meta">${esc(r.endereco || r.detalhe || 'Resultado da busca · ainda não salvo')}</div></div>
     </div>
     <div class="acoes">
-      <button class="btn" data-acao="salvar">➕ Salvar</button>
+      <button class="btn" data-acao="contatar">📞 Salvar para contatar</button>
+      <button class="btn btn-sec" data-acao="salvar">➕ Salvar</button>
       <a class="btn btn-sec" href="${linkGoogleMaps(r)}" target="_blank" rel="noopener">🧭 Rota</a>
     </div>`;
 }
@@ -119,6 +122,13 @@ export function render(container, { params = [] } = {}) {
     const acao = e.target.closest('[data-acao]')?.dataset.acao;
     if (!acao || !atual) return;
     if (acao === 'roteiro' && atual.tipo === 'lugar') abrirAdicionarAoRoteiro({ lugarId: atual.dados.id, titulo: atual.dados.nome });
+    if (acao === 'contato' && atual.tipo === 'lugar') abrirRegistroContato(atual.dados);
+    if (acao === 'contatar' && atual.tipo === 'resultado') {
+      const id = await salvarParaContatar(atual.dados);
+      toast('📞 Salvo em Contatos (a contatar)');
+      fecharFolha();
+      location.hash = `#/lugar/${encodeURIComponent(id)}`;
+    }
     if (acao === 'salvar' && atual.tipo === 'resultado') {
       const id = await modalSalvarResultado(atual.dados);
       if (id) fecharFolha();

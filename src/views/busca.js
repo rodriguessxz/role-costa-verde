@@ -15,7 +15,8 @@ function buscar(q) {
   const listas = listar('listas');
   const itens = listar('itens').filter((i) => casa(q, i.texto, i.obs));
   const comentarios = listar('comentarios').filter((c) => casa(q, c.texto));
-  return { lugares, notas, ideias, atividades, itens, comentarios, dias, listas };
+  const contatos = listar('interacoes').filter((i) => casa(q, i.texto, i.pessoa, i.datas, i.proximoPasso));
+  return { lugares, notas, ideias, atividades, itens, comentarios, contatos, dias, listas };
 }
 
 const secao = (titulo, linhas) => (linhas.length ? `<section class="bloco-simples"><h3>${titulo} <small>${linhas.length}</small></h3><div class="lista-simples">${linhas.join('')}</div></section>` : '');
@@ -39,7 +40,7 @@ export function render(container) {
       return;
     }
     const r = buscar(q);
-    const total = r.lugares.length + r.notas.length + r.ideias.length + r.atividades.length + r.itens.length + r.comentarios.length;
+    const total = r.lugares.length + r.notas.length + r.ideias.length + r.atividades.length + r.itens.length + r.comentarios.length + r.contatos.length;
     if (!total) { saida.innerHTML = vazio({ emoji: '🌫️', titulo: `Nada encontrado para “${ultima.trim()}”`, texto: 'Confira a grafia ou use o Explorar para achar lugares novos.', acao: { rotulo: 'Ir para Explorar', href: '#/explorar' } }); return; }
     const lugarPorId = (id) => listar('lugares').find((l) => l.id === id);
     saida.innerHTML = [
@@ -48,6 +49,7 @@ export function render(container) {
       secao('Ideias', r.ideias.map((i) => linha('#/ideias', '💡', i.titulo, i.descricao ? String(i.descricao).slice(0, 80) : ''))),
       secao('Roteiro', r.atividades.map((a) => linha('#/roteiro', '📌', a.titulo, r.dias.find((d) => d.id === a.diaId)?.titulo || 'Sem dia'))),
       secao('Checklist', r.itens.map((i) => linha('#/checklist', i.feito ? '✅' : '⬜', i.texto, r.listas.find((l) => l.id === i.listaId)?.nome || ''))),
+      secao('Contatos registrados', r.contatos.map((i) => linha(`#/lugar/${encodeURIComponent(i.lugarId)}`, '📞', String(i.texto || i.datas || 'Contato').slice(0, 60), lugarPorId(i.lugarId)?.nome || ''))),
       secao('Comentários', r.comentarios.map((c) => linha(`#/lugar/${encodeURIComponent(c.lugarId)}`, '💬', String(c.texto).slice(0, 60), lugarPorId(c.lugarId)?.nome || '')))
     ].join('');
   }

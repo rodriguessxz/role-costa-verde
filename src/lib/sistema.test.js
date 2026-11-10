@@ -5,6 +5,7 @@ import { camposAlterados, conflitos } from './conflito.js';
 import { tempoRelativo, diasAte, dataCurta } from './tempo.js';
 import { mover, analisarDia, atividadesDoDia, horaParaMin } from './roteiro.js';
 import { tipoDoResultado, converterFeatureRapida, caixaEmVolta } from './geocode.js';
+import { ETAPAS, interacoesDoLugar, resumoContatos, situacaoRetorno, textoValor, etapaDoLugar } from './contatos.js';
 import { mesclarResultados, planoRapido, montarConsulta, converterResposta, categoriaDasTags } from './osm.js';
 
 test('conflito: só vira conflito se o OUTRO mudou o mesmo campo para outro valor', () => {
@@ -106,4 +107,35 @@ test('mesclar: completos têm prioridade e não repete', () => {
     [{ osmId: 'node/1', nome: 'A rápido', distanciaKm: 2 }, { osmId: 'node/2', nome: 'B', distanciaKm: 1 }]
   );
   assert.deepEqual(m.map((r) => r.nome), ['B', 'A completo']);
+});
+
+test('contatos: valor, retorno e resumo', () => {
+  assert.equal(textoValor({ valor: 80, valorTipo: 'noite' }), 'R$ 80 por noite');
+  assert.equal(textoValor({ valor: 62.5, valorTipo: 'pessoa' }), 'R$ 62,50 por pessoa');
+  assert.equal(textoValor({ valor: null }), '');
+  assert.equal(textoValor({ valor: '' }), '');
+  assert.equal(situacaoRetorno('2026-11-09', new Date(2026, 10, 10)), 'atrasado');
+  assert.equal(situacaoRetorno('2026-11-10', new Date(2026, 10, 10)), 'hoje');
+  assert.equal(situacaoRetorno('2026-11-12', new Date(2026, 10, 10)), 'proximo');
+  assert.equal(situacaoRetorno(''), null);
+
+  const todas = [
+    { id: '1', lugarId: 'a', data: '2026-11-01T10:00', valor: 90, valorTipo: 'noite', datas: '30/12 a 02/01', retornoEm: '2026-11-05' },
+    { id: '2', lugarId: 'a', data: '2026-11-03T09:00', texto: 'sem novidade' },
+    { id: '3', lugarId: 'b', data: '2026-11-02T09:00' }
+  ];
+  const so = interacoesDoLugar(todas, 'a');
+  assert.deepEqual(so.map((i) => i.id), ['2', '1']); // mais recente primeiro
+  const r = resumoContatos(so);
+  assert.equal(r.total, 2);
+  assert.equal(r.ultima.id, '2');
+  assert.equal(r.valor.texto, 'R$ 90 por noite'); // o último valor conhecido segue valendo
+  assert.equal(r.valor.datas, '30/12 a 02/01');
+  assert.equal(r.retornoEm, ''); // a conversa mais nova não combinou retorno
+  assert.equal(resumoContatos([]).ultima, null);
+
+  assert.equal(etapaDoLugar({ etapaContato: 'reservado' }, []), 'reservado');
+  assert.equal(etapaDoLugar({}, [{}]), 'contatado');
+  assert.equal(etapaDoLugar({}, []), '');
+  assert.ok(ETAPAS['a-contatar']);
 });

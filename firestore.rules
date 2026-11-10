@@ -14,7 +14,7 @@ service cloud.firestore {
 
     // Coleções que o app usa dentro de trips/{tripId}
     function colecaoConhecida(c) {
-      return c in ['lugares', 'gastos', 'config', 'dias', 'atividades', 'notas', 'ideias', 'listas', 'itens', 'comentarios'];
+      return c in ['lugares', 'gastos', 'config', 'dias', 'atividades', 'notas', 'ideias', 'listas', 'itens', 'comentarios', 'interacoes'];
     }
 
     // Validação básica de tamanho/tipo (só olha campos que vierem no documento)
@@ -30,6 +30,7 @@ service cloud.firestore {
         && textoCurto(d, 'observacoes', 5000)
         && (c != 'itens' || (d.texto is string && d.listaId is string))
         && (c != 'comentarios' || (d.texto is string && d.lugarId is string))
+        && (c != 'interacoes' || (d.lugarId is string && textoCurto(d, 'texto', 5000)))
         && (c != 'atividades' || (d.titulo is string && d.diaId is string))
         && (c != 'lugares' || d.nome is string);
     }

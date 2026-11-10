@@ -24,6 +24,7 @@ const ROTAS = {
   lugar: () => import('./views/lugar.js'),
   editar: () => import('./views/lugar.js'),
   novo: () => import('./views/novo.js'),
+  contatos: () => import('./views/contatos.js'),
   notas: () => import('./views/notas.js'),
   ideias: () => import('./views/ideias.js'),
   checklist: () => import('./views/checklist.js'),

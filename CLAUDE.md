@@ -232,3 +232,12 @@ O app deixou de ser "um mapa com ferramentas" e virou o painel privado da viagem
 - **Sync**: chip no topo (sincronizado / enviando / offline / falha) a partir de `statusSync()` no store.
 - Lógica nova e pura em `src/lib/` (`conflito`, `tempo`, `roteiro`, `osm`, `geocode`) com testes em `src/lib/sistema.test.js`.
 - Pendências conhecidas: fotos (precisa de Firebase Storage/plano), reordenar por arrastar (hoje é ▲▼ + "mover para"), avaliações de lugares (fonte aberta não tem).
+
+## Funil de contatos (10/11/2026)
+
+Para procurar campings e registrar cada conversa dentro do app (em vez de pesquisar no Google Maps e anotar fora):
+- Coleção `interacoes` (`lugarId`, `canal`, `data`, `pessoa`, `texto`, `valor`, `valorTipo`, `datas`, `retornoEm`, `proximoPasso`) + campo `etapaContato` no lugar
+  (`a-contatar · contatado · aguardando · respondeu · reservado · sem-vaga · sem-interesse`). Lógica pura em `src/lib/contatos.js` (testada).
+- Ficha do lugar: bloco "Contato com o local" (etapa, último valor informado, retorno, atalhos WhatsApp/ligação/e-mail/Instagram, linha do tempo). Depois de abrir WhatsApp/ligação o app pergunta se quer registrar.
+- Tela **Contatos** (`views/contatos.js`): funil por etapa, retornos atrasados/de hoje e campings salvos "fora do funil".
+- Explorar e Mapa: "📞 Contatar" / "Salvar para contatar" salva o pin na etapa "a contatar". `salvarParaContatar` em `src/acoes.js`.
