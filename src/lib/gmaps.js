@@ -80,3 +80,13 @@ export function tipoPeloNome(nome = '') {
   if (/\b(mercado|supermercado|posto|farm[aá]cia|padaria|empório|emporio)\b/.test(n)) return 'apoio';
   return 'camping';
 }
+
+/**
+ * Link que abre o lugar no Google Maps (no iPhone/Android abre o app do Google Maps, onde estão nota, fotos e avaliações).
+ * Com o identificador do Google vai direto no lugar; sem ele, busca pelo nome + endereço (ou coordenadas).
+ */
+export function urlGoogleDoLugar(l) {
+  const consulta = [l.nome, l.endereco || (Number.isFinite(l.lat) ? `${l.lat},${l.lng}` : '')].filter(Boolean).join(' ');
+  const base = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(consulta)}`;
+  return l.googlePlaceId ? `${base}&query_place_id=${encodeURIComponent(l.googlePlaceId)}` : base;
+}

@@ -138,5 +138,22 @@ export async function salvarParaContatar(r) {
   return id;
 }
 
+/**
+ * Importa vários resultados de uma vez como "leads para triar" (etapa "Para triar").
+ * Não duplica o que já está salvo. Devolve { novos, jaExistiam }.
+ */
+export async function importarLote(resultados) {
+  let novos = 0;
+  let jaExistiam = 0;
+  for (const r of resultados) {
+    // no modo nuvem a lista só atualiza depois do envio: por isso a checagem é ANTES de salvar
+    const existia = listar('lugares').some((l) => (r.osmId && l.osmId === r.osmId) || (r.googlePlaceId && l.googlePlaceId === r.googlePlaceId));
+    await salvarResultado(r, { status: 'avaliar', extra: { etapaContato: 'triagem' } });
+    if (existia) jaExistiam += 1;
+    else novos += 1;
+  }
+  return { novos, jaExistiam };
+}
+
 /** Alterna favorito. */
 export const alternarFavorito = (l) => atualizar('lugares', l.id, { favorito: !l.favorito });

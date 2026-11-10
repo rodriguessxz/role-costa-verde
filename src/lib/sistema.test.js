@@ -6,7 +6,7 @@ import { tempoRelativo, diasAte, dataCurta } from './tempo.js';
 import { mover, analisarDia, atividadesDoDia, horaParaMin } from './roteiro.js';
 import { tipoDoResultado, converterFeatureRapida, caixaEmVolta } from './geocode.js';
 import { ETAPAS, interacoesDoLugar, resumoContatos, situacaoRetorno, textoValor, etapaDoLugar } from './contatos.js';
-import { tipoPeloNome, acharUrl, coordenadasDe, nomeDoLink, interpretarCompartilhado, ehLinkGoogleMaps, consultaGoogle, urlEmbutida } from './gmaps.js';
+import { urlGoogleDoLugar, tipoPeloNome, acharUrl, coordenadasDe, nomeDoLink, interpretarCompartilhado, ehLinkGoogleMaps, consultaGoogle, urlEmbutida } from './gmaps.js';
 import { mesclarResultados, planoRapido, montarConsulta, converterResposta, categoriaDasTags } from './osm.js';
 
 test('conflito: só vira conflito se o OUTRO mudou o mesmo campo para outro valor', () => {
@@ -178,4 +178,10 @@ test('google maps: palpite de tipo pelo nome', () => {
   assert.equal(tipoPeloNome('Praia do Sono'), 'praia');
   assert.equal(tipoPeloNome('Supermercado Paraty'), 'apoio');
   assert.equal(tipoPeloNome('Nome qualquer'), 'camping');
+});
+
+test('google maps: link do lugar (com e sem identificador do Google)', () => {
+  assert.equal(urlGoogleDoLugar({ nome: 'Camping X', endereco: 'Rua A, 1' }), 'https://www.google.com/maps/search/?api=1&query=Camping%20X%20Rua%20A%2C%201');
+  assert.match(urlGoogleDoLugar({ nome: 'Camping X', lat: -23.4, lng: -45 }), /query=Camping%20X%20-23\.4%2C-45$/);
+  assert.match(urlGoogleDoLugar({ nome: 'X', googlePlaceId: 'ChIJ1' }), /&query_place_id=ChIJ1$/);
 });

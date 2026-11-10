@@ -3,6 +3,7 @@
 
 /** Etapas do funil, na ordem em que costumam acontecer. */
 export const ETAPAS = {
+  triagem: { rotulo: 'Para triar', emoji: '🔎' },
   'a-contatar': { rotulo: 'A contatar', emoji: '📌' },
   contatado: { rotulo: 'Contatado', emoji: '📞' },
   aguardando: { rotulo: 'Aguardando resposta', emoji: '⏳' },

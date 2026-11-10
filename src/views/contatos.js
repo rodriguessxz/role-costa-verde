@@ -4,6 +4,7 @@ import { abrirRegistroContato, linksDeContato } from '../contatos.js';
 import { ETAPAS, CANAIS, ETAPAS_ABERTAS, interacoesDoLugar, resumoContatos, situacaoRetorno, etapaDoLugar } from '../lib/contatos.js';
 import { tempoRelativo, dataCurta } from '../lib/tempo.js';
 import { ico } from '../icons.js';
+import { urlGoogleDoLugar } from '../lib/gmaps.js';
 import { esc, html, tipoInfo, REGIOES, vazio, toast } from '../ui.js';
 
 const TIPOS_FUNIL = { camping: '⛺ Campings', hospedagem: '🏠 Hospedagem', restaurante: '🍽️ Comer', todos: 'Todos' };
@@ -35,6 +36,25 @@ function cartao(l, interacoes) {
       <button class="btn btn-sm" data-acao="registrar">${ico('contato')} Registrar</button>
       ${zap ? `<a class="btn btn-sm btn-sec" href="${esc(zap.href)}" ${zap.canal === 'whatsapp' ? 'target="_blank" rel="noopener noreferrer"' : ''} data-canal="${zap.canal}">${CANAIS[zap.canal].emoji} ${zap.rotulo}</a>` : ''}
     </div>
+  </article>`;
+}
+
+/** Cartão de triagem: decidir rápido se o lead vale a pena (abre no Google Maps para ver nota e fotos). */
+function cartaoTriagem(l) {
+  const t = tipoInfo(l.tipo);
+  return `<article class="triagem-card" data-id="${esc(l.id)}" style="--cor:${t.cor}">
+    <div class="contato-topo">
+      <span class="card-emoji">${t.emoji}</span>
+      <span class="contato-info"><b>${esc(l.nome)}</b>
+        <small>${esc([t.rotulo, REGIOES[l.regiao], l.endereco].filter(Boolean).join(' · '))}</small></span>
+    </div>
+    ${l.telefone ? `<p class="contato-resumo">📞 ${esc(l.telefone)}</p>` : ''}
+    <a class="btn btn-sec btn-grande" href="${esc(urlGoogleDoLugar(l))}" target="_blank" rel="noopener noreferrer">Ver nota e fotos no Google Maps ↗</a>
+    <div class="triagem-botoes">
+      <button class="btn btn-descartar" data-acao="descartar">🗑️ Descartar</button>
+      <button class="btn" data-acao="interessa">👍 Interessa</button>
+    </div>
+    <a class="link-btn" href="#/lugar/${encodeURIComponent(l.id)}">abrir ficha</a>
   </article>`;
 }
 
@@ -73,7 +93,8 @@ export function render(container) {
     const urgentes = retornos.filter(({ r }) => ['atrasado', 'hoje'].includes(situacaoRetorno(r.retornoEm)));
 
     const visiveis = noFunil.filter((l) => !etapaFiltro || etapaDe(l) === etapaFiltro);
-    const grupos = Object.keys(ETAPAS).map((k) => ({ k, itens: visiveis.filter((l) => etapaDe(l) === k) })).filter((g) => g.itens.length);
+    const triagem = visiveis.filter((l) => etapaDe(l) === 'triagem');
+    const grupos = Object.keys(ETAPAS).filter((k) => k !== 'triagem').map((k) => ({ k, itens: visiveis.filter((l) => etapaDe(l) === k) })).filter((g) => g.itens.length);
     const semEtapa = visiveis.filter((l) => !ETAPAS[etapaDe(l)]);
     if (semEtapa.length) grupos.push({ k: '', itens: semEtapa });
 
@@ -82,6 +103,11 @@ export function render(container) {
       saida += `<section class="bloco-simples retornos"><h3>⏰ Retornar agora <small>${urgentes.length}</small></h3>
         <div class="lista-simples">${urgentes.map(({ l, r }) => `<a class="linha-ativ" href="#/lugar/${encodeURIComponent(l.id)}"><span class="linha-hora">${esc(dataCurta(r.retornoEm))}</span>
           <span class="linha-corpo"><b>${esc(l.nome)}</b><small>${situacaoRetorno(r.retornoEm) === 'atrasado' ? 'atrasado' : 'hoje'}${r.ultima?.proximoPasso ? ` · ${esc(r.ultima.proximoPasso)}` : ''}</small></span></a>`).join('')}</div></section>`;
+    }
+    if (triagem.length) {
+      saida += `<section class="bloco-simples triagem"><h3>🔎 Para triar <small>${triagem.length}</small></h3>
+        <p class="dica">Abra no Google Maps para ver nota e fotos e decida: <b>Interessa</b> vai para “A contatar”; <b>Descartar</b> tira da lista.</p>
+        <div class="lista">${triagem.map(cartaoTriagem).join('')}</div></section>`;
     }
     if (!noFunil.length) {
       saida += vazio({
@@ -109,6 +135,12 @@ export function render(container) {
     const etapa = e.target.closest('[data-etapa]');
     if (etapa) { etapaFiltro = etapa.dataset.etapa; return desenhar(); }
     const acao = e.target.closest('[data-acao]')?.dataset.acao;
+    if (acao === 'interessa' || acao === 'descartar') {
+      const id = e.target.closest('[data-id]').dataset.id;
+      if (acao === 'interessa') atualizar('lugares', id, { etapaContato: 'a-contatar' });
+      else atualizar('lugares', id, { etapaContato: 'sem-interesse', status: 'descartado' });
+      return toast(acao === 'interessa' ? '👍 Foi para “A contatar”' : '🗑️ Descartado');
+    }
     if (acao === 'fora') { mostrarForaDoFunil = !mostrarForaDoFunil; return desenhar(); }
     if (acao === 'entrar') {
       atualizar('lugares', e.target.closest('[data-id]').dataset.id, { etapaContato: 'a-contatar' });

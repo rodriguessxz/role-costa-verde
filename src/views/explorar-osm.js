@@ -9,7 +9,7 @@ import { buscarLugares, buscaRapida } from '../lib/geocode.js';
 import { CENTRO_REGIAO, CENTROS_REGIAO, posicaoAtual, linkGoogleMaps, formatarKm } from '../lib/geo.js';
 import { tempoRelativo } from '../lib/tempo.js';
 import { guardarExplorar, lerExplorar } from '../explorar-estado.js';
-import { modalSalvarResultado, salvarResultado, abrirAdicionarAoRoteiro, salvarParaContatar } from '../acoes.js';
+import { modalSalvarResultado, salvarResultado, abrirAdicionarAoRoteiro, salvarParaContatar, importarLote } from '../acoes.js';
 import { ico } from '../icons.js';
 import { esc, html, toast, tipoInfo, vazio, REGIOES, debounce } from '../ui.js';
 
@@ -310,6 +310,7 @@ export function render(container) {
     const visiveis = estado.resultados.slice(0, estado.mostrando);
     caixa.innerHTML = `${topo}
       <p class="dica">${estado.resultados.length} resultado${estado.resultados.length > 1 ? 's' : ''} · fonte OpenStreetMap${estado.em ? ` · ${tempoRelativo(estado.em)}` : ''}</p>
+      <button class="btn btn-sec btn-grande" data-acao="lote">📥 Importar todos (${estado.resultados.filter((r) => !salvos.has(r.osmId)).length}) para triagem</button>
       <div class="res-lista">${visiveis.map((r) => cartao(r, salvos)).join('')}</div>
       ${estado.resultados.length > estado.mostrando ? '<button class="btn btn-sec btn-grande" data-acao="mais">Mostrar mais</button>' : ''}`;
   }
@@ -336,6 +337,13 @@ export function render(container) {
     const a = acao.dataset.acao || acao.dataset.vazio;
     if (a === 'tentar' || a === 'buscar') return buscarTudo();
     if (a === 'mais') { estado.mostrando += POR_PAGINA; return pintarLista(); }
+    if (a === 'lote') {
+      acao.disabled = true;
+      const { novos, jaExistiam } = await importarLote(estado.resultados);
+      toast(`📥 ${novos} lead${novos === 1 ? '' : 's'} para triar${jaExistiam ? ` (${jaExistiam} já estavam salvos)` : ''}`);
+      pintarLista();
+      return;
+    }
 
     const nomeEl = acao.closest('.nome-achado');
     if (nomeEl) {

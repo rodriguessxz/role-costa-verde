@@ -6,7 +6,7 @@ import { esc, html, debounce, toast, tipoInfo } from '../ui.js';
 import { chavePlaces } from '../integracoes.js';
 import { buscarPlaces, lerUso, restantes, LIMITE_MENSAL, MENSAGENS_PLACES } from '../lib/places.js';
 import { CENTROS_REGIAO, linkGoogleMaps } from '../lib/geo.js';
-import { modalSalvarResultado, salvarParaContatar, salvarResultado, abrirAdicionarAoRoteiro } from '../acoes.js';
+import { modalSalvarResultado, salvarParaContatar, salvarResultado, abrirAdicionarAoRoteiro, importarLote } from '../acoes.js';
 
 const TERMOS = {
   camping: 'camping', praia: 'praia', cachoeira: 'cachoeira', trilha: 'trilha', restaurante: 'restaurante',
@@ -129,6 +129,7 @@ export function render(painel) {
       <p class="dica">Nota, avaliações, telefone, site e horário vindos do Google. Cada busca conta na sua cota gratuita: restam <b>${sobra}</b> de ${LIMITE_MENSAL} neste mês, neste aparelho.</p>
       <button class="btn" data-acao="buscar-detalhes" ${sobra ? '' : 'disabled'}>Buscar “${esc(estado.consulta)}” com detalhes</button>
       ${msg ? `<div class="aviso">${esc(msg)}</div>` : ''}
+      ${achados.length ? `<button class="btn btn-grande" data-acao="lote">📥 Importar todos (${achados.length}) para triagem</button>` : ''}
       <div class="res-lista" data-lista>${achados.map(cartaoGoogle).join('')}</div>
       ${achados.length ? '<p class="dica">Dados do Google Maps. Confira preço, reserva e acesso antes de ir.</p>' : ''}
     </div>`;
@@ -161,6 +162,12 @@ export function render(painel) {
       } catch (err) {
         if (err.name !== 'AbortError') pintarDetalhes(MENSAGENS_PLACES[err.tipo] || MENSAGENS_PLACES.falha);
       }
+      return;
+    }
+    if (acao === 'lote') {
+      const { novos, jaExistiam } = await importarLote(achados);
+      toast(`📥 ${novos} lead${novos === 1 ? '' : 's'} para triar${jaExistiam ? ` (${jaExistiam} já estavam salvos)` : ''}`);
+      location.hash = '#/contatos';
       return;
     }
     const r = achados[Number(e.target.closest('[data-i]')?.dataset.i)];

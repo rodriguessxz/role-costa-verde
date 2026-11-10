@@ -259,3 +259,8 @@ Para procurar campings e registrar cada conversa dentro do app (em vez de pesqui
   A IA só propõe; o app valida contra os dados reais, mostra a prévia e só grava com aprovação. Nunca altera atividade confirmada/feita nem apaga. Telefone/e-mail/Instagram nunca vão no prompt.
   A chave fica em `config/integracoes` (Firestore, só os 2 e-mails leem). Nunca no repositório.
 - **Google Places (opcional, exige faturamento no Google Cloud)**: `lib/places.js`, seção "Resultados com detalhes" na aba Google do Explorar. Trava de 400 buscas/mês por aparelho. Nota/avaliações/horários não são guardados; telefone/site/endereço só se a opção estiver ligada.
+
+## Leads em lote e triagem (11/2026)
+- `importarLote` (`src/acoes.js`): importa todos os resultados de uma busca (Dados abertos ou Google Places) como lugares na etapa `triagem` ("Para triar"), sem duplicar (osmId/googlePlaceId).
+- Tela Contatos → "Para triar": cartão com **Ver nota e fotos no Google Maps** (`urlGoogleDoLugar`, abre o app do Google Maps no iPhone), **Interessa** (→ "A contatar") e **Descartar** (→ "Sem interesse", status descartado).
+- Importar TUDO direto do Google só é possível com a chave do Places (faturamento). Sem ela: Dados abertos (OpenStreetMap) em lote + abrir cada um no Google Maps.
