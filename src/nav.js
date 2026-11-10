@@ -18,7 +18,7 @@ export const MODULOS = [
 ];
 
 /** Rotas que não são módulos → aba onde aparecem destacadas. */
-const ABA_DE_ROTA = { lugar: 'lugares', editar: 'lugares', lista: 'lugares', novo: 'lugares', busca: 'mais', mais: 'mais' };
+const ABA_DE_ROTA = { importar: 'explorar', lugar: 'lugares', editar: 'lugares', lista: 'lugares', novo: 'lugares', busca: 'mais', mais: 'mais' };
 
 export const abaDaRota = (rota) => MODULOS.find((m) => m.id === rota)?.aba || ABA_DE_ROTA[rota] || 'inicio';
 

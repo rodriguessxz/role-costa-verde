@@ -25,6 +25,7 @@ const ROTAS = {
   editar: () => import('./views/lugar.js'),
   novo: () => import('./views/novo.js'),
   contatos: () => import('./views/contatos.js'),
+  importar: () => import('./views/importar.js'),
   notas: () => import('./views/notas.js'),
   ideias: () => import('./views/ideias.js'),
   checklist: () => import('./views/checklist.js'),
@@ -134,7 +135,20 @@ function mostrarSaida(estado) {
   mostrarLogin(loginRoot, estado);
 }
 
+/**
+ * "Compartilhar" do Android (PWA instalado): o sistema abre o app com ?title=&text=&url=.
+ * Guardamos isso, limpamos o endereço e mandamos pra tela de importação (depois do login).
+ */
+function capturarCompartilhamento() {
+  const q = new URLSearchParams(location.search);
+  const dados = { title: q.get('title') || '', text: q.get('text') || '', url: q.get('url') || '' };
+  if (!dados.title && !dados.text && !dados.url) return;
+  try { sessionStorage.setItem('role:compartilhado', JSON.stringify(dados)); } catch { /* ok */ }
+  history.replaceState(null, '', `${location.pathname}#/importar`);
+}
+
 async function iniciar() {
+  capturarCompartilhamento();
   window.addEventListener('store-erro', (e) => {
     const code = e.detail?.code || '';
     toast(code === 'permission-denied' ? '🔒 Sem permissão: confira se seu e-mail está liberado' : '⚠️ Erro ao salvar');

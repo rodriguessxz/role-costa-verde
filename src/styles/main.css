@@ -819,3 +819,29 @@ body.sem-scroll { overflow: hidden; }
 .pin.etapa-sem-vaga, .pin.etapa-sem-interesse { opacity: .5; filter: grayscale(.7); }
 .pin.etapa-contatado, .pin.etapa-aguardando, .pin.etapa-respondeu { border-color: var(--amarelo); }
 .pin.etapa-a-contatar { border-color: var(--coral); }
+
+/* ---------- Explorar: Google Maps + importar ---------- */
+.segmentado-modo { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; background: var(--areia); padding: 4px; border-radius: 16px; margin: 4px 0 12px; }
+.segmentado-modo button { min-height: 46px; border: 0; border-radius: 12px; background: transparent; color: var(--texto-2); font: inherit; font-weight: 700; font-size: .92rem; cursor: pointer; }
+.segmentado-modo button small { font-weight: 500; opacity: .8; }
+.segmentado-modo button.on { background: var(--bg-2); color: var(--texto); box-shadow: var(--sombra); }
+.explorar-wrap [data-painel] > .pagina { padding: 0; max-width: none; animation: none; }
+.explorar-google .chips { margin-bottom: 2px; }
+.google-moldura { position: relative; margin-top: 8px; border-radius: 24px; overflow: hidden; border: 1px solid var(--borda); background: var(--areia); box-shadow: var(--sombra); }
+.google-moldura iframe { display: block; width: 100%; height: clamp(360px, 62dvh, 640px); border: 0; }
+.google-offline { position: absolute; inset: 0; display: grid; place-items: center; margin: 0; padding: 20px; text-align: center; color: var(--texto-2); }
+.google-ajuda { margin-top: 18px; padding: 16px; border-radius: 22px; background: var(--bg-2); border: 1px solid var(--borda); }
+.google-ajuda h3 { margin-top: 0; }
+.google-ajuda ol { margin: 0 0 12px; padding-left: 1.2rem; line-height: 1.5; color: var(--texto-2); }
+.google-ajuda li { margin-bottom: 4px; }
+.google-ajuda .acoes { margin: 0 0 8px; }
+.importar-form { margin-top: 18px; }
+.importar-pos { display: flex; flex-direction: column; gap: 8px; padding: 12px; border: 1.5px dashed var(--borda); border-radius: 18px; }
+.pos-ok { margin: 0; font-weight: 700; color: var(--mata); }
+.pos-ok small { display: block; color: var(--texto-2); font-weight: 500; }
+.pos-falta { margin: 0; color: #b4571f; font-weight: 600; }
+@media (min-width: 900px) {
+  .google-moldura iframe { height: calc(100dvh - 330px); min-height: 420px; }
+}
+.google-moldura::before { content: 'Carregando o mapa do Google…'; position: absolute; inset: 0; display: grid; place-items: center; color: var(--texto-2); font-weight: 600; }
+.google-moldura iframe { position: relative; z-index: 1; }

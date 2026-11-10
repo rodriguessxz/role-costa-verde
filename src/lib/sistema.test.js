@@ -6,6 +6,7 @@ import { tempoRelativo, diasAte, dataCurta } from './tempo.js';
 import { mover, analisarDia, atividadesDoDia, horaParaMin } from './roteiro.js';
 import { tipoDoResultado, converterFeatureRapida, caixaEmVolta } from './geocode.js';
 import { ETAPAS, interacoesDoLugar, resumoContatos, situacaoRetorno, textoValor, etapaDoLugar } from './contatos.js';
+import { tipoPeloNome, acharUrl, coordenadasDe, nomeDoLink, interpretarCompartilhado, ehLinkGoogleMaps, consultaGoogle, urlEmbutida } from './gmaps.js';
 import { mesclarResultados, planoRapido, montarConsulta, converterResposta, categoriaDasTags } from './osm.js';
 
 test('conflito: só vira conflito se o OUTRO mudou o mesmo campo para outro valor', () => {
@@ -138,4 +139,43 @@ test('contatos: valor, retorno e resumo', () => {
   assert.equal(etapaDoLugar({}, [{}]), 'contatado');
   assert.equal(etapaDoLugar({}, []), '');
   assert.ok(ETAPAS['a-contatar']);
+});
+
+test('google maps: link longo, texto compartilhado e coordenadas', () => {
+  const longo = 'https://www.google.com/maps/place/Camping+Sununga/@-23.4968,-45.1726,17z/data=!3m1!4b1!4m6!3m5!1s0x94d:0x1!8m2!3d-23.4971234!4d-45.1729876';
+  assert.equal(nomeDoLink(longo), 'Camping Sununga');
+  assert.deepEqual(coordenadasDe(longo), { lat: -23.4971234, lng: -45.1729876 }); // prefere a posição exata (!3d!4d)
+  assert.deepEqual(coordenadasDe('https://www.google.com/maps/@-23.43,-45.08,12z'), { lat: -23.43, lng: -45.08 });
+  assert.deepEqual(coordenadasDe('https://maps.google.com/?q=-23.2,-44.7'), { lat: -23.2, lng: -44.7 });
+  assert.deepEqual(coordenadasDe('-23.4336, -45.0838'), { lat: -23.4336, lng: -45.0838 });
+  assert.equal(coordenadasDe('https://maps.app.goo.gl/AbC123'), null);
+  assert.equal(coordenadasDe('sem nada'), null);
+
+  const curto = interpretarCompartilhado({ text: 'Padang Surf Camping Ubatuba\nRua Paulo Everzoline, 175 - Ubatuba\nhttps://maps.app.goo.gl/AbC123' });
+  assert.equal(curto.nome, 'Padang Surf Camping Ubatuba');
+  assert.equal(curto.endereco, 'Rua Paulo Everzoline, 175 - Ubatuba');
+  assert.equal(curto.url, 'https://maps.app.goo.gl/AbC123');
+  assert.equal(curto.lat, null);
+  assert.equal(curto.ehGoogle, true);
+
+  const comTitulo = interpretarCompartilhado({ title: 'Chalés e Camping Tio Gato', url: longo });
+  assert.equal(comTitulo.nome, 'Camping Sununga'); // o nome do link longo é mais confiável
+  assert.equal(comTitulo.lat, -23.4971234);
+
+  assert.equal(acharUrl('veja (https://exemplo.com/x).'), 'https://exemplo.com/x');
+  assert.equal(ehLinkGoogleMaps('https://www.google.com/maps/place/x'), true);
+  assert.equal(ehLinkGoogleMaps('https://exemplo.com'), false);
+  assert.equal(consultaGoogle('camping', 'Ubatuba'), 'camping em Ubatuba');
+  assert.match(urlEmbutida('camping em Ubatuba'), /output=embed/);
+});
+
+test('google maps: palpite de tipo pelo nome', () => {
+  assert.equal(tipoPeloNome('Camping Sununga'), 'camping');
+  assert.equal(tipoPeloNome('Chalés e Camping Tio Gato'), 'camping');
+  assert.equal(tipoPeloNome('Pousada Vison Ubatuba'), 'hospedagem');
+  assert.equal(tipoPeloNome('Restaurante Caiçara'), 'restaurante');
+  assert.equal(tipoPeloNome('Cachoeira do Escorrega'), 'cachoeira');
+  assert.equal(tipoPeloNome('Praia do Sono'), 'praia');
+  assert.equal(tipoPeloNome('Supermercado Paraty'), 'apoio');
+  assert.equal(tipoPeloNome('Nome qualquer'), 'camping');
 });

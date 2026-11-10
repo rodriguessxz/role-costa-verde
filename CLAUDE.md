@@ -241,3 +241,13 @@ Para procurar campings e registrar cada conversa dentro do app (em vez de pesqui
 - Ficha do lugar: bloco "Contato com o local" (etapa, último valor informado, retorno, atalhos WhatsApp/ligação/e-mail/Instagram, linha do tempo). Depois de abrir WhatsApp/ligação o app pergunta se quer registrar.
 - Tela **Contatos** (`views/contatos.js`): funil por etapa, retornos atrasados/de hoje e campings salvos "fora do funil".
 - Explorar e Mapa: "📞 Contatar" / "Salvar para contatar" salva o pin na etapa "a contatar". `salvarParaContatar` em `src/acoes.js`.
+
+## Explorar com Google Maps (10/11/2026)
+
+- `Explorar` tem duas abas: **Google Maps** (padrão) e **Dados abertos** (OpenStreetMap, salva direto).
+  A aba Google usa o embed de busca do Google (`https://www.google.com/maps?q=...&output=embed`), sem chave e sem custo (`views/explorar-google.js`).
+  O Google não deixa o app ler cliques dentro do embed, então salvar é por **Importar do Google Maps** (`views/importar.js`, `lib/gmaps.js`):
+  cola-se o link/texto do Google ou usa-se "Compartilhar" no Android (PWA instalado: `share_target` no `vite.config.js`, tratado em `main.js → capturarCompartilhamento`).
+- Importar lê nome, endereço, link e coordenadas (link longo = posição exata; link curto = palpite pelo nome via Photon, marcado `coordAprox`).
+- Se algum dia for preciso ter nota/telefone/foto do Google DENTRO do app: Places API (New) exige chave + conta de faturamento no Google Cloud e os termos limitam guardar dados.
+- O embed do Google é um recurso não documentado de modo de busca; se parar de funcionar, a aba Google mostra o mapa vazio e o botão "Abrir no Google Maps" continua valendo.

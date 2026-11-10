@@ -24,6 +24,28 @@ export function formatarKm(km) {
 /** Centro aproximado da região (meio do caminho Ubatuba–Paraty), usado sem GPS. */
 export const CENTRO_REGIAO = { lat: -23.33, lng: -44.88 };
 
+/** Centros aproximados de cada região (ponto de partida de buscas e palpite de região). */
+export const CENTROS_REGIAO = {
+  'ubatuba-centro': { lat: -23.4336, lng: -45.0838 },
+  'ubatuba-norte': { lat: -23.3650, lng: -44.8480 },
+  'ubatuba-sul': { lat: -23.4950, lng: -45.1600 },
+  trindade: { lat: -23.3590, lng: -44.7240 },
+  paraty: { lat: -23.2178, lng: -44.7131 },
+  'paraty-mirim': { lat: -23.2930, lng: -44.6480 }
+};
+
+/** Região cujo centro está mais perto do ponto (vazio se nenhuma a menos de 40 km). */
+export function regiaoMaisProxima(ponto) {
+  if (!temCoord(ponto)) return '';
+  let melhor = '';
+  let menor = 40;
+  for (const [k, c] of Object.entries(CENTROS_REGIAO)) {
+    const d = distanciaKm(ponto, c);
+    if (d < menor) { menor = d; melhor = k; }
+  }
+  return melhor;
+}
+
 /** Pega a posição atual do celular. Resolve null se negado/indisponível. */
 export function posicaoAtual({ timeout = 10000 } = {}) {
   return new Promise((resolve) => {

@@ -1,6 +1,7 @@
 // Ações compartilhadas entre telas: salvar resultado de busca como lugar e adicionar ao roteiro.
 import { adicionar, atualizar, listar } from './store.js';
 import { abrirModal, esc, toast, opcoesSelect, STATUS, tipoInfo } from './ui.js';
+import { regiaoMaisProxima } from './lib/geo.js';
 import { ordenarDias, atividadesDoDia, proximaOrdem } from './lib/roteiro.js';
 
 /**
@@ -18,6 +19,7 @@ export async function salvarResultado(r, { status = 'ideia', observacoes = '', e
     subtipo: r.subtipo,
     lat: r.lat,
     lng: r.lng,
+    regiao: regiaoMaisProxima(r),
     coordAprox: false,
     status,
     observacoes,
