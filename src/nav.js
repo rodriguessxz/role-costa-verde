@@ -14,6 +14,7 @@ export const MODULOS = [
   { id: 'checklist', rotulo: 'Checklist', icone: 'checklist', aba: 'mais', desc: 'Camping, trilha, carro e compras' },
   { id: 'gastos', rotulo: 'Gastos', icone: 'gastos', aba: 'mais', desc: 'Racha entre os dois' },
   { id: 'roleta', rotulo: 'Roleta', icone: 'dado', aba: 'mais', desc: 'Sem planejar, mas sem furada' },
+  { id: 'ia', rotulo: 'Assistente IA', icone: 'ia', aba: 'mais', desc: 'Pergunte, peça sugestões e ajustes no roteiro' },
   { id: 'config', rotulo: 'Configurações', icone: 'config', aba: 'mais', desc: 'Viagem, dupla e dados' }
 ];
 

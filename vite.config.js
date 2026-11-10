@@ -8,11 +8,23 @@ const base = process.env.BASE_PATH || '/';
 import { readFileSync } from 'node:fs';
 const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url)));
 
+// Identificador desta compilação (data + commit). O app compara com /version.json para saber se está desatualizado.
+const BUILD = { em: new Date().toISOString(), sha: (process.env.GITHUB_SHA || 'local').slice(0, 7) };
+
+/** Publica /version.json junto do app (não entra no cache offline: o app o busca sempre na rede). */
+const publicarVersao = () => ({
+  name: 'publicar-versao',
+  generateBundle() {
+    this.emitFile({ type: 'asset', fileName: 'version.json', source: JSON.stringify(BUILD) });
+  }
+});
+
 export default defineConfig({
   base,
-  define: { __APP_VERSION__: JSON.stringify(pkg.version) },
+  define: { __APP_VERSION__: JSON.stringify(pkg.version), __APP_BUILD__: JSON.stringify(BUILD) },
   build: { chunkSizeWarningLimit: 1000 },
   plugins: [
+    publicarVersao(),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['icons/*.png', 'seed.json'],
@@ -38,6 +50,7 @@ export default defineConfig({
       workbox: {
         // App shell + seed ficam em cache para abrir sem sinal
         globPatterns: ['**/*.{js,css,html,png,svg,json,woff2}'],
+        globIgnores: ['version.json'],
         runtimeCaching: [
           {
             // Tiles do mapa: guarda o que já foi visto (até ~3000 tiles)

@@ -27,8 +27,9 @@ export function render(painel) {
     <div class="chips" data-termos>${Object.entries(ROTULOS).map(([k, r]) => `<button class="chip" data-termo="${k}">${r}</button>`).join('')}</div>
     <div class="chips" data-locais>${LOCAIS.map((l) => `<button class="chip chip-sm" data-local="${esc(l)}">${esc(l.replace(/ (Ubatuba|Paraty)$/, ''))}</button>`).join('')}</div>
 
-    <div class="google-moldura"><iframe title="Mapa do Google com os resultados da busca" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe>
-      <p class="google-offline" hidden>Sem internet: o mapa do Google precisa de conexão.</p></div>
+    <div class="google-moldura"><iframe title="Mapa do Google com os resultados da busca" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe>
+      <div class="google-estado" data-estado hidden></div></div>
+    <p class="google-rodape">Mapa do Google · <a data-abrir2 href="#" target="_blank" rel="noopener noreferrer">abrir em tela cheia ↗</a></p>
 
     <div class="google-ajuda">
       <h3>Achou um lugar? Guarde no app</h3>
@@ -47,7 +48,9 @@ export function render(painel) {
   painel.append(el);
 
   const iframe = el.querySelector('iframe');
-  const offline = el.querySelector('.google-offline');
+  const estadoEl = el.querySelector('[data-estado]');
+  const abrir2 = el.querySelector('[data-abrir2]');
+  let demora = null;
   const abrir = el.querySelector('[data-abrir]');
   const campo = el.querySelector('[name=q]');
 
@@ -56,12 +59,33 @@ export function render(painel) {
     el.querySelectorAll('[data-local]').forEach((b) => b.classList.toggle('on', estado.local === b.dataset.local && estado.consulta === consultaGoogle(TERMOS[estado.termo], estado.local)));
     campo.value = estado.consulta;
     abrir.href = urlAbrirNoGoogle(estado.consulta);
+    abrir2.href = abrir.href;
   }
+  /** Mensagem sobre o mapa: carregando, demorando, sem internet ou nada (null esconde). */
+  function mostrarEstado(tipo) {
+    if (!tipo) { estadoEl.hidden = true; return; }
+    const texto = {
+      carregando: ['Carregando o mapa do Google…', ''],
+      demora: ['O mapa está demorando', '<button class="btn btn-sm" data-recarregar>Recarregar o mapa</button> <a class="btn btn-sm btn-sec" data-abrir3 target="_blank" rel="noopener noreferrer">Abrir no Google Maps ↗</a>'],
+      offline: ['Sem internet', 'O mapa do Google precisa de conexão. Quando o sinal voltar, toque em recarregar. <button class="btn btn-sm" data-recarregar>Recarregar</button>']
+    }[tipo];
+    estadoEl.className = 'google-estado' + (tipo === 'carregando' ? '' : ' google-estado-aviso');
+    estadoEl.innerHTML = `<b>${texto[0]}</b>${texto[1] ? `<div class="google-estado-acoes">${texto[1]}</div>` : ''}`;
+    const l3 = estadoEl.querySelector('[data-abrir3]');
+    if (l3) l3.href = abrir.href;
+    estadoEl.hidden = false;
+  }
+
   const carregar = debounce(() => {
-    offline.hidden = navigator.onLine;
-    if (!navigator.onLine) return;
+    clearTimeout(demora);
+    if (!navigator.onLine) { iframe.removeAttribute('src'); return mostrarEstado('offline'); }
+    mostrarEstado('carregando');
     iframe.src = urlEmbutida(estado.consulta);
+    // o navegador avisa quando o conteúdo carregou (load); se não avisar em 20 s, oferecemos alternativas
+    demora = setTimeout(() => mostrarEstado('demora'), 20000);
   }, 250);
+  iframe.addEventListener('load', () => { if (iframe.getAttribute('src')) { clearTimeout(demora); mostrarEstado(null); } });
+  window.addEventListener('online', carregar);
   function buscar(consulta) {
     estado.consulta = consulta.trim() || consultaGoogle(TERMOS[estado.termo], estado.local);
     try { localStorage.setItem(KEY, JSON.stringify(estado)); } catch { /* ok */ }
@@ -70,6 +94,7 @@ export function render(painel) {
   }
 
   el.addEventListener('click', (e) => {
+    if (e.target.closest('[data-recarregar]')) return carregar();
     const termo = e.target.closest('[data-termo]');
     if (termo) { estado.termo = termo.dataset.termo; return buscar(consultaGoogle(TERMOS[estado.termo], estado.local)); }
     const local = e.target.closest('[data-local]');
@@ -82,4 +107,6 @@ export function render(painel) {
 
   pintar();
   buscar(estado.consulta);
+
+  return () => { clearTimeout(demora); window.removeEventListener('online', carregar); };
 }

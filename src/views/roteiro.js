@@ -6,6 +6,7 @@ import { rotaDeCarro } from '../lib/rotas.js';
 import { ordenarDias, atividadesDoDia, mover, proximaOrdem, analisarDia, horaParaMin } from '../lib/roteiro.js';
 import { formatarKm, temCoord, linkGoogleMaps } from '../lib/geo.js';
 import { ico } from '../icons.js';
+import { abrirAjusteIA, ajusteParaDesfazer, desfazerUltimoAjuste } from '../ia-roteiro.js';
 import { esc, html, toast, tipoInfo, vazio, abrirModal, confirmar, opcoesSelect, REGIOES, formatarDuracao, quemMexeu } from '../ui.js';
 
 let reorganizando = false;
@@ -184,6 +185,8 @@ export function render(container, { params = [] } = {}) {
       <div class="roteiro-barra">
         <button class="btn btn-sm" data-acao="novo-dia">+ Dia ou etapa</button>
         <button class="btn btn-sm btn-sec" data-acao="nova-ativ">+ Atividade</button>
+        <button class="btn btn-sm btn-sec" data-acao="ia">${ico('ia')} Ajustar com IA</button>
+        ${ajusteParaDesfazer() ? '<button class="btn btn-sm btn-sec" data-acao="desfazer-ia">↶ Desfazer ajuste da IA</button>' : ''}
         ${todas.length > 1 ? `<button class="btn btn-sm btn-sec ${reorganizando ? 'on' : ''}" data-acao="reorganizar">${reorganizando ? 'Concluir' : 'Reorganizar'}</button>` : ''}
       </div>
       ${semDias && !banco.length ? vazio({ emoji: '🧭', titulo: 'Seu roteiro está em branco', texto: 'Crie um dia ou uma etapa (não precisa ter data). Depois adicione lugares salvos, ou deixe as ideias soltas no banco de atividades.', acao: { rotulo: 'Criar o primeiro dia', id: 'novo-dia' } }) : ''}
@@ -206,6 +209,8 @@ export function render(container, { params = [] } = {}) {
     const ativEl = alvo.closest('.ativ');
     const a = obter('atividades', ativEl?.dataset.id || alvo.dataset.id); // o botão de rota fica fora do .ativ, com data-id próprio
 
+    if (acao === 'ia') return abrirAjusteIA();
+    if (acao === 'desfazer-ia') { await desfazerUltimoAjuste(); return desenhar(); }
     if (acao === 'novo-dia') return modalDia(null);
     if (acao === 'nova-ativ') return abrirAdicionarAoRoteiro({});
     if (acao === 'reorganizar') { reorganizando = !reorganizando; return desenhar(); }
@@ -282,6 +287,7 @@ export function render(container, { params = [] } = {}) {
     });
   }
 
+  if (params[0] === 'ia') { history.replaceState(null, '', '#/roteiro'); setTimeout(abrirAjusteIA, 50); }
   // #/roteiro/nova (atalho do Início) abre direto "adicionar atividade"
   if (params[0] === 'nova') { history.replaceState(null, '', '#/roteiro'); setTimeout(() => abrirAdicionarAoRoteiro({}), 50); }
 

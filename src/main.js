@@ -1,7 +1,6 @@
 // Bootstrap + login obrigatório + roteamento por hash (#/inicio, #/lugar/:id, ...).
 import 'leaflet/dist/leaflet.css';
 import './styles/main.css';
-import { registerSW } from 'virtual:pwa-register';
 
 import { firebaseAtivo, observarUsuario } from './firebase.js';
 import { iniciarLocal, iniciarNuvem, desligar, statusSync, assinar } from './store.js';
@@ -11,6 +10,7 @@ import { htmlLateral, htmlAbas, marcarAtivo } from './nav.js';
 import { mostrarLogin, esconderLogin } from './views/login.js';
 import { getViagem } from './viagem.js';
 import { diasAte } from './lib/tempo.js';
+import { iniciarAtualizacao, aplicarAtualizacao } from './atualizacao.js';
 
 // rota → view (carregada sob demanda: o app abre mais rápido no celular).
 // Cada view exporta render(container, params) e pode devolver uma função de limpeza.
@@ -26,6 +26,7 @@ const ROTAS = {
   novo: () => import('./views/novo.js'),
   contatos: () => import('./views/contatos.js'),
   importar: () => import('./views/importar.js'),
+  ia: () => import('./views/ia.js'),
   notas: () => import('./views/notas.js'),
   ideias: () => import('./views/ideias.js'),
   checklist: () => import('./views/checklist.js'),
@@ -182,5 +183,17 @@ async function iniciar() {
 
 iniciar();
 
-// Service worker (PWA): atualiza sozinho quando sair versão nova
-registerSW({ immediate: true, onOfflineReady: () => toast('📦 App pronto pra usar offline') });
+/** Aviso fixo quando há versão nova: não recarrega sozinho para não perder o que a pessoa está digitando. */
+function mostrarAvisoAtualizacao() {
+  const faixa = document.getElementById('banner-atualizacao');
+  if (!faixa || !faixa.hidden) return;
+  faixa.innerHTML = '<span>✨ Há uma versão nova do app.</span><button type="button" class="btn btn-sm">Atualizar agora</button>';
+  faixa.querySelector('button').addEventListener('click', aplicarAtualizacao);
+  faixa.hidden = false;
+}
+
+// Service worker (PWA) + checagem de versão publicada
+iniciarAtualizacao({
+  aoOffline: () => toast('📦 App pronto pra usar offline'),
+  aoNovaVersao: mostrarAvisoAtualizacao
+});

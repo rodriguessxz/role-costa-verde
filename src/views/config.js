@@ -5,6 +5,9 @@ import {
 } from '../store.js';
 import { getViagem, nomesDupla, euSou, definirEuSou } from '../viagem.js';
 import { confirmar, esc, html, toast } from '../ui.js';
+import { chaveGemini, modeloGemini, salvarIntegracoes, mascarar } from '../integracoes.js';
+import { testarChave } from '../lib/gemini.js';
+import { BUILD_ATUAL, buscarAtualizacao, aplicarAtualizacao, forcarAtualizacao } from '../atualizacao.js';
 
 export function render(container) {
   const desenhar = () => {
@@ -66,6 +69,24 @@ export function render(container) {
       </div>
 
       <div class="card-config">
+        <h3>✨ IA gratuita (Gemini)</h3>
+        <p class="dica">${chaveGemini() ? `Ativa: chave ${esc(mascarar(chaveGemini()))} · modelo ${esc(modeloGemini())}.` : 'Sem chave ainda.'} Gere uma chave grátis (sem cartão) em <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer">aistudio.google.com/apikey</a> e cole abaixo. Vale para os dois aparelhos.</p>
+        <form class="form" data-form="ia">
+          <input class="input" name="chave" type="password" autocomplete="off" placeholder="Cole a chave da API aqui"/>
+          <button class="btn btn-sec" type="submit">Salvar e testar chave</button>
+          ${chaveGemini() ? '<button class="btn btn-perigo" type="button" data-acao="remover-ia">Remover chave</button>' : ''}
+        </form>
+        <p class="dica">Privacidade: no plano gratuito o Google pode usar o que for enviado para melhorar produtos. O app nunca envia telefone, e-mail nem Instagram.</p>
+      </div>
+
+      <div class="card-config">
+        <h3>🔄 Versão do app</h3>
+        <p class="dica">Rodando: build de ${esc(new Date(BUILD_ATUAL.em).toLocaleString('pt-BR'))} (${esc(BUILD_ATUAL.sha)}).</p>
+        <button class="btn btn-sec" data-acao="atualizar">Buscar atualização</button>
+        <button class="btn btn-sec" data-acao="forcar">Forçar atualização (limpa o cache do app, não apaga seus dados)</button>
+      </div>
+
+      <div class="card-config">
         <h3>📶 O que funciona sem internet</h3>
         <p class="dica"><b>Funciona:</b> abrir o app depois da primeira visita; consultar lugares, roteiro, anotações, ideias e checklists já sincronizados; criar e editar tudo (fica pendente e sobe quando o sinal volta).</p>
         <p class="dica"><b>Precisa de internet:</b> Explorar, busca por nome, cálculo de rota, login e mapa (só os trechos já vistos ficam em cache).</p>
@@ -118,6 +139,25 @@ export function render(container) {
       for (const g of locais.gastos) if (!obter('gastos', g.id)) adicionar('gastos', g, g.id);
       toast(`⬆️ ${n} lugares e ${locais.gastos.length} gastos enviados`);
     });
+
+    el.querySelector('[data-form="ia"]').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const chave = String(new FormData(e.target).get('chave')).trim();
+      if (!chave) return toast('Cole a chave primeiro');
+      toast('Testando a chave…');
+      try {
+        const { escolhido } = await testarChave(chave);
+        await salvarIntegracoes({ geminiKey: chave, geminiModelo: escolhido });
+        toast(`✨ IA ativa (modelo ${escolhido})`);
+      } catch (err) { toast(err.tipo === 'chave' ? 'Chave não aceita. Confira e tente de novo.' : 'Não consegui testar agora (internet?)'); }
+    });
+    el.querySelector('[data-acao="remover-ia"]')?.addEventListener('click', async () => { await salvarIntegracoes({ geminiKey: '' }); toast('Chave removida'); });
+    el.querySelector('[data-acao="atualizar"]').addEventListener('click', async () => {
+      const r = await buscarAtualizacao();
+      if (r === 'nova') { toast('Versão nova encontrada: atualizando…'); aplicarAtualizacao(); }
+      else toast(r === 'atual' ? 'Você já está na versão mais recente' : 'Não consegui verificar agora (internet?)');
+    });
+    el.querySelector('[data-acao="forcar"]').addEventListener('click', forcarAtualizacao);
 
     el.querySelector('[data-acao="backup"]').addEventListener('click', () => {
       const blob = new Blob([JSON.stringify(exportarTudo(), null, 2)], { type: 'application/json' });

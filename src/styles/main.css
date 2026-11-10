@@ -843,5 +843,46 @@ body.sem-scroll { overflow: hidden; }
 @media (min-width: 900px) {
   .google-moldura iframe { height: calc(100dvh - 330px); min-height: 420px; }
 }
-.google-moldura::before { content: 'Carregando o mapa do Google…'; position: absolute; inset: 0; display: grid; place-items: center; color: var(--texto-2); font-weight: 600; }
 .google-moldura iframe { position: relative; z-index: 1; }
+
+/* ---------- Aviso de versão nova ---------- */
+.banner-atualizacao {
+  position: fixed; z-index: 2600; left: 12px; right: 12px; top: calc(var(--topbar-h) + var(--safe-t) + 8px); margin: 0 auto; max-width: 480px;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 12px 10px 16px;
+  border-radius: 18px; background: var(--mar-fundo); color: #fff; font-weight: 600; box-shadow: var(--sombra-forte);
+  animation: sobe .3s ease both;
+}
+@media (min-width: 900px) { .banner-atualizacao { left: calc(var(--lateral-w) + 20px); margin: 0; } }
+
+.google-estado { position: absolute; inset: 0; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 20px; text-align: center; color: var(--texto-2); background: color-mix(in srgb, var(--areia) 88%, transparent); pointer-events: none; }
+.google-estado-aviso { pointer-events: auto; color: var(--texto); }
+.google-estado-acoes { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; max-width: 34ch; line-height: 1.4; }
+.google-rodape { margin: 6px 4px 0; font-size: .8rem; color: var(--texto-2); }
+.google-rodape a { color: var(--destaque); font-weight: 700; }
+
+/* ---------- IA ---------- */
+.ia-chat { display: flex; flex-direction: column; gap: 10px; margin: 12px 0; }
+.ia-msg { display: flex; }
+.ia-eu { justify-content: flex-end; }
+.ia-msg > div { max-width: 88%; padding: 10px 14px; border-radius: 18px; line-height: 1.45; }
+.ia-eu > div { background: var(--mar-2); color: #fff; border-bottom-right-radius: 6px; }
+.ia-bot > div { background: var(--bg-2); border: 1px solid var(--borda); border-bottom-left-radius: 6px; }
+.ia-bot p { margin: 0 0 8px; } .ia-bot ul, .ia-bot ol { margin: 0 0 8px; padding-left: 1.2rem; }
+.ia-erro > div { background: #fff0c2; color: #7a5200; }
+.ia-fontes { display: flex; flex-direction: column; gap: 2px; margin-top: 6px; font-size: .8rem; }
+.ia-form { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: end; }
+.ia-web { margin-top: 6px; }
+.ia-atalhos { margin: 6px 0; }
+.ia-ativar { padding: 18px; border-radius: 24px; background: var(--bg-2); border: 1px solid var(--borda); }
+.ia-ativar-icone { width: 48px; height: 48px; border-radius: 16px; display: grid; place-items: center; background: linear-gradient(145deg, #ff8a5c, var(--coral)); color: #fff; }
+.ia-pensando { display: flex; gap: 6px; padding: 4px 2px; }
+.ia-pensando i { width: 8px; height: 8px; border-radius: 50%; background: var(--texto-2); animation: pulsa 1s infinite; }
+.ia-pensando i:nth-child(2) { animation-delay: .2s; } .ia-pensando i:nth-child(3) { animation-delay: .4s; }
+.ia-aguarde { text-align: center; padding: 20px; color: var(--texto-2); }
+.ia-resumo { font-weight: 600; line-height: 1.45; }
+.ia-mudancas { padding-left: 1.2rem; line-height: 1.5; }
+.ia-dia { background: var(--areia); border-radius: 14px; padding: 8px 12px; margin-bottom: 8px; }
+.ia-dia.novo { border: 1.5px solid var(--mata); }
+.ia-dia ul { list-style: none; margin: 4px 0 0; padding: 0; } .ia-dia li { padding: 2px 0; } .ia-dia li.alt { opacity: .75; }
+.ia-hora { font-weight: 800; color: var(--destaque); font-size: .8rem; margin-right: 4px; }
+.ia-rejeitadas { margin: 8px 0; color: var(--texto-2); font-size: .85rem; }
