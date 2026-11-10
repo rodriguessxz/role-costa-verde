@@ -7,6 +7,7 @@ import { tempoRelativo, dataCurta } from './lib/tempo.js';
 import { iaAtiva, perguntarIA, mensagemDoErro } from './ia-cliente.js';
 import { promptMensagemContato } from './lib/ia.js';
 import { getViagem } from './viagem.js';
+import { abrirMensagemWhatsApp } from './mensagem-whatsapp.js';
 import {
   ETAPAS, CANAIS, TIPOS_VALOR, interacoesDoLugar, resumoContatos, situacaoRetorno, textoValor, etapaDoLugar
 } from './lib/contatos.js';
@@ -154,7 +155,8 @@ export function htmlBlocoContato(lugar, interacoes) {
     </div>` : ''}
     ${links.length ? `<div class="acoes acoes-contato">${links.map((c) => `<a class="btn btn-sm btn-sec" data-canal="${c.canal}" href="${esc(c.href)}" ${c.externo || c.canal === 'whatsapp' ? 'target="_blank" rel="noopener noreferrer"' : ''}>${CANAIS[c.canal].emoji} ${c.rotulo}</a>`).join('')}</div>
       <div class="lembrete-registro" data-lembrete hidden></div>` : '<p class="dica">Sem telefone, WhatsApp ou e-mail salvos. Use Editar para cadastrar e ter os atalhos aqui.</p>'}
-    <button class="btn btn-grande" data-acao="registrar-contato">＋ Registrar contato</button>
+    <button class="btn btn-grande btn-whats" data-acao="msg-zap">💬 Mandar mensagem no WhatsApp</button>
+    <button class="btn btn-sec btn-grande" data-acao="registrar-contato">＋ Registrar contato</button>
     ${iaAtiva() ? '<button class="btn btn-sec btn-grande" data-acao="rascunhar">✨ Rascunhar mensagem com IA</button>' : ''}
     ${interacoes.length ? `<ol class="linha-tempo">${interacoes.map((i) => `<li data-interacao="${esc(i.id)}" tabindex="0" role="button">
         <span class="lt-ponto">${CANAIS[i.canal]?.emoji || '📝'}</span>
@@ -175,11 +177,13 @@ export function ligarBlocoContato(raiz, lugar, interacoes) {
   bloco.addEventListener('click', (e) => {
     const etapa = e.target.closest('[data-etapa]');
     if (etapa) return atualizar('lugares', lugar.id, { etapaContato: etapa.dataset.etapa });
+    if (e.target.closest('[data-acao="msg-zap"]')) return abrirMensagemWhatsApp(lugar);
     if (e.target.closest('[data-acao="registrar-contato"]')) return abrirRegistroContato(lugar);
     if (e.target.closest('[data-acao="rascunhar"]')) return abrirRascunho(lugar, interacoes);
     const item = e.target.closest('[data-interacao]');
     if (item) return abrirRegistroContato(lugar, { interacao: interacoes.find((i) => i.id === item.dataset.interacao) });
     const canal = e.target.closest('[data-canal]');
+    if (canal?.dataset.canal === 'whatsapp') { e.preventDefault(); return abrirMensagemWhatsApp(lugar); }
     if (canal) {
       // depois de abrir WhatsApp/ligação, lembra de registrar o que foi dito
       const aviso = bloco.querySelector('[data-lembrete]');

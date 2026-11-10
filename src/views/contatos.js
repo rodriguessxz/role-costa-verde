@@ -1,6 +1,7 @@
 // 📞 Contatos: o funil dos campings (e outros locais) que estamos procurando e contatando.
 import { assinarVarias, listar, atualizar } from '../store.js';
-import { abrirRegistroContato, linksDeContato } from '../contatos.js';
+import { abrirRegistroContato } from '../contatos.js';
+import { abrirMensagemWhatsApp } from '../mensagem-whatsapp.js';
 import { ETAPAS, CANAIS, ETAPAS_ABERTAS, interacoesDoLugar, resumoContatos, situacaoRetorno, etapaDoLugar } from '../lib/contatos.js';
 import { tempoRelativo, dataCurta } from '../lib/tempo.js';
 import { ico } from '../icons.js';
@@ -19,7 +20,6 @@ function cartao(l, interacoes) {
   const etapa = etapaDoLugar(l, interacoes);
   const r = resumoContatos(interacoes);
   const sit = r.retornoEm ? situacaoRetorno(r.retornoEm) : null;
-  const zap = linksDeContato(l).find((c) => c.canal === 'whatsapp' || c.canal === 'telefone');
   return `<article class="contato-card" data-id="${esc(l.id)}" style="--cor:${t.cor}">
     <a class="contato-topo" href="#/lugar/${encodeURIComponent(l.id)}">
       <span class="card-emoji">${t.emoji}</span>
@@ -34,7 +34,7 @@ function cartao(l, interacoes) {
     ${r.retornoEm ? `<p class="contato-retorno ${sit === 'atrasado' ? 'atrasado' : ''}">↪ Retornar ${sit === 'hoje' ? 'hoje' : esc(dataCurta(r.retornoEm))}${sit === 'atrasado' ? ' (atrasado)' : ''}${r.ultima?.proximoPasso ? ` · ${esc(r.ultima.proximoPasso)}` : ''}</p>` : ''}
     <div class="res-acoes">
       <button class="btn btn-sm" data-acao="registrar">${ico('contato')} Registrar</button>
-      ${zap ? `<a class="btn btn-sm btn-sec" href="${esc(zap.href)}" ${zap.canal === 'whatsapp' ? 'target="_blank" rel="noopener noreferrer"' : ''} data-canal="${zap.canal}">${CANAIS[zap.canal].emoji} ${zap.rotulo}</a>` : ''}
+      <button class="btn btn-sm btn-whats" data-acao="zap">💬 WhatsApp</button>
     </div>
   </article>`;
 }
@@ -145,6 +145,11 @@ export function render(container) {
     if (acao === 'entrar') {
       atualizar('lugares', e.target.closest('[data-id]').dataset.id, { etapaContato: 'a-contatar' });
       return toast('📌 No funil, etapa “A contatar”');
+    }
+    if (acao === 'zap') {
+      const l = listar('lugares').find((x) => x.id === e.target.closest('.contato-card').dataset.id);
+      if (l) abrirMensagemWhatsApp(l);
+      return;
     }
     if (acao === 'registrar') {
       const l = listar('lugares').find((x) => x.id === e.target.closest('.contato-card').dataset.id);

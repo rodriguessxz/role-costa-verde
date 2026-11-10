@@ -264,3 +264,7 @@ Para procurar campings e registrar cada conversa dentro do app (em vez de pesqui
 - `importarLote` (`src/acoes.js`): importa todos os resultados de uma busca (Dados abertos ou Google Places) como lugares na etapa `triagem` ("Para triar"), sem duplicar (osmId/googlePlaceId).
 - Tela Contatos → "Para triar": cartão com **Ver nota e fotos no Google Maps** (`urlGoogleDoLugar`, abre o app do Google Maps no iPhone), **Interessa** (→ "A contatar") e **Descartar** (→ "Sem interesse", status descartado).
 - Importar TUDO direto do Google só é possível com a chave do Places (faturamento). Sem ela: Dados abertos (OpenStreetMap) em lote + abrir cada um no Google Maps.
+
+## Mensagem do WhatsApp e visibilidade da triagem (11/2026)
+- `lib/mensagens.js` (puro, testado) + `mensagem-whatsapp.js`: o botão WhatsApp (ficha e tela Contatos) abre uma mensagem pronta, descolada e EDITÁVEL (3 estilos: descolada/curta/educada; pessoas e datas ajustáveis), com "Abrir no WhatsApp" (wa.me já com o texto), "Copiar", "Melhorar com IA" (opcional) e "Registrar contato" depois de enviar. Sem número salvo, pede o número e guarda no lugar.
+- Triagem mais visível: botão "📥 Importar todos…" direto na aba Google do Explorar (busca rápida de dados abertos → leads), botão fixo na aba Dados abertos, cartão laranja no Início e selo com o número na aba "Mais".

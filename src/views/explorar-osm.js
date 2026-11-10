@@ -310,7 +310,7 @@ export function render(container) {
     const visiveis = estado.resultados.slice(0, estado.mostrando);
     caixa.innerHTML = `${topo}
       <p class="dica">${estado.resultados.length} resultado${estado.resultados.length > 1 ? 's' : ''} · fonte OpenStreetMap${estado.em ? ` · ${tempoRelativo(estado.em)}` : ''}</p>
-      <button class="btn btn-sec btn-grande" data-acao="lote">📥 Importar todos (${estado.resultados.filter((r) => !salvos.has(r.osmId)).length}) para triagem</button>
+      <button class="btn btn-grande lote-fixo" data-acao="lote">📥 Importar todos (${estado.resultados.filter((r) => !salvos.has(r.osmId)).length}) para triagem</button>
       <div class="res-lista">${visiveis.map((r) => cartao(r, salvos)).join('')}</div>
       ${estado.resultados.length > estado.mostrando ? '<button class="btn btn-sec btn-grande" data-acao="mais">Mostrar mais</button>' : ''}`;
   }

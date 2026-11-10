@@ -3,7 +3,7 @@ import 'leaflet/dist/leaflet.css';
 import './styles/main.css';
 
 import { firebaseAtivo, observarUsuario } from './firebase.js';
-import { iniciarLocal, iniciarNuvem, desligar, statusSync, assinar } from './store.js';
+import { iniciarLocal, iniciarNuvem, desligar, statusSync, assinar, listar } from './store.js';
 import { toast, esc } from './ui.js';
 import { ico } from './icons.js';
 import { htmlLateral, htmlAbas, marcarAtivo } from './nav.js';
@@ -96,6 +96,15 @@ function atualizarSync() {
   }[estado];
 }
 
+/** Bolinha com o número de leads para triar na aba "Mais" e no menu lateral. */
+function atualizarSelos() {
+  const n = listar('lugares').filter((l) => l.etapaContato === 'triagem').length;
+  document.querySelectorAll('[data-tab="mais"], .lateral-nav [data-rota="contatos"]').forEach((a) => {
+    a.querySelector('.selo')?.remove();
+    if (n) a.insertAdjacentHTML('beforeend', `<b class="selo" aria-label="${n} para triar">${n}</b>`);
+  });
+}
+
 function monitorarRede() {
   const badge = document.getElementById('net-badge');
   const atualizar = () => { badge.hidden = navigator.onLine; atualizarSync(); };
@@ -118,6 +127,7 @@ function montarShell() {
   document.getElementById('tabbar').innerHTML = htmlAbas();
   monitorarRede();
   assinar('config', atualizarPilula);
+  assinar('lugares', atualizarSelos);
   window.addEventListener('hashchange', rotear);
 }
 

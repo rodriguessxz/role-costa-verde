@@ -892,3 +892,25 @@ body.sem-scroll { overflow: hidden; }
 .triagem-botoes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .triagem-botoes .btn { min-height: 54px; font-size: 1.02rem; }
 .btn-descartar { background: var(--bg-2); color: #d64545; border: 1.5px solid #d64545; box-shadow: none; }
+
+/* ---------- Visibilidade: importar/triar e WhatsApp ---------- */
+.lote-fixo { position: sticky; bottom: calc(var(--base-h) + 10px); z-index: 20; background: linear-gradient(145deg, #ff8a5c, var(--coral)); box-shadow: 0 10px 26px rgba(255, 106, 77, .45); }
+.google-lote { margin: 8px 0 4px; }
+.google-lote .dica { margin: 6px 4px 0; }
+.btn-lote { background: linear-gradient(145deg, #ff8a5c, var(--coral)); box-shadow: 0 10px 24px rgba(255, 106, 77, .45); }
+.faixa-triagem { display: flex; align-items: center; gap: 12px; margin-top: 14px; padding: 14px 16px; border-radius: 22px; text-decoration: none; color: #fff; background: linear-gradient(135deg, #ff8a5c, var(--coral)); box-shadow: 0 10px 24px rgba(255, 106, 77, .4); }
+.faixa-triagem > span { font-size: 1.7rem; }
+.faixa-triagem div { flex: 1; display: flex; flex-direction: column; }
+.faixa-triagem small { opacity: .9; }
+.faixa-triagem i { font-style: normal; font-weight: 800; white-space: nowrap; }
+.faixa-triagem.calma { color: var(--texto); background: var(--bg-2); border: 1.5px dashed var(--coral); box-shadow: none; }
+.faixa-triagem.calma small { color: var(--texto-2); }
+.selo { position: absolute; top: 4px; right: calc(50% - 26px); min-width: 20px; height: 20px; padding: 0 5px; border-radius: 999px; background: var(--coral); color: #fff; font-size: .7rem; font-weight: 800; display: grid; place-items: center; }
+.tabbar a, .lateral-nav a { position: relative; }
+.lateral-nav .selo { top: 50%; right: 10px; transform: translateY(-50%); }
+.selo-linha { position: static; display: inline-block; height: auto; padding: 2px 8px; margin-left: 6px; vertical-align: middle; }
+.btn-whats { background: linear-gradient(145deg, #3fcf6b, #1faa51); box-shadow: 0 6px 16px rgba(31, 170, 81, .35); }
+.wa-texto { line-height: 1.45; }
+.desativado { opacity: .55; }
+.acoes-fixas { position: sticky; bottom: 0; z-index: 3; padding: 10px 0 4px; background: linear-gradient(to top, var(--bg-2) 75%, transparent); }
+.acoes-fixas .btn { flex: 1; min-height: 52px; }

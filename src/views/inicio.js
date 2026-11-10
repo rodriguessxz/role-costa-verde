@@ -85,6 +85,13 @@ function desenhar(el) {
       <a class="atalho" href="#/mapa"><span>${ico('mapa')}</span>Mapa</a>
     </section>
 
+    ${(() => {
+      const n = lugares.filter((l) => l.etapaContato === 'triagem').length;
+      return n
+        ? `<a class="faixa-triagem" href="#/contatos"><span>🔎</span><div><b>${n} lead${n === 1 ? '' : 's'} para triar</b><small>Descarte ou abra no Google Maps para ver as notas.</small></div><i>Triar →</i></a>`
+        : `<a class="faixa-triagem calma" href="#/explorar"><span>📥</span><div><b>Importar leads de campings</b><small>Busque em Explorar e importe todos de uma vez.</small></div><i>Abrir →</i></a>`;
+    })()}
+
     <section class="bloco">
       <div class="bloco-cab"><h2>Roteiro</h2><a href="#/roteiro">Abrir</a></div>
       ${prox.length
