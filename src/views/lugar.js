@@ -10,6 +10,7 @@ import {
 } from '../ui.js';
 import { tempoRelativo } from '../lib/tempo.js';
 import { interacoesDoLugar } from '../lib/contatos.js';
+import { iaAtiva } from '../ia-cliente.js';
 import { htmlBlocoContato, ligarBlocoContato, mostraBlocoContato } from '../contatos.js';
 
 // Checklist pré-trilha (fica salvo dentro do próprio lugar)
@@ -95,6 +96,7 @@ function ficha(l) {
     </div>
 
     <div class="acoes">
+      ${iaAtiva() ? `<a class="btn btn-sec" href="#/ia/lugar/${encodeURIComponent(l.id)}">${ico('ia')} Perguntar à IA</a>` : ''}
       <button class="btn" data-acao="roteiro">${ico('roteiro')} Pôr no roteiro${noRoteiro.length ? ` (${noRoteiro.length})` : ''}</button>
       ${temCoord(l) ? `<a class="btn btn-sec" href="${linkGoogleMaps(l)}" target="_blank" rel="noopener">🧭 Google Maps</a>
       <a class="btn btn-sec" href="${linkWaze(l)}" target="_blank" rel="noopener">🚙 Waze</a>

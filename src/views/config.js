@@ -5,7 +5,8 @@ import {
 } from '../store.js';
 import { getViagem, nomesDupla, euSou, definirEuSou } from '../viagem.js';
 import { confirmar, esc, html, toast } from '../ui.js';
-import { chaveGemini, modeloGemini, salvarIntegracoes, mascarar } from '../integracoes.js';
+import { chaveGemini, modeloGemini, salvarIntegracoes, mascarar, chavePlaces, guardarDadosGoogle } from '../integracoes.js';
+import { lerUso, restantes, LIMITE_MENSAL } from '../lib/places.js';
 import { testarChave } from '../lib/gemini.js';
 import { BUILD_ATUAL, buscarAtualizacao, aplicarAtualizacao, forcarAtualizacao } from '../atualizacao.js';
 
@@ -80,6 +81,19 @@ export function render(container) {
       </div>
 
       <div class="card-config">
+        <h3>🗺️ Google Places (opcional)</h3>
+        <p class="dica">Traz nota, telefone e site do Google dentro do Explorar. <b>Atenção:</b> a API exige uma conta do Google Cloud com faturamento ativado (cartão), embora o uso dentro da cota gratuita não gere cobrança. O app trava sozinho em ${LIMITE_MENSAL} buscas por mês neste aparelho. Se preferir não cadastrar cartão, ignore: o mapa do Google e o Importar continuam funcionando.</p>
+        <p class="dica">${chavePlaces() ? `Ativa: chave ${esc(mascarar(chavePlaces()))} · restam ${restantes(lerUso())} buscas neste mês.` : 'Sem chave.'} Ative a “Places API (New)”, crie uma chave restrita ao seu site (referenciador HTTP) e defina uma cota diária baixa no Google Cloud.</p>
+        <form class="form" data-form="places">
+          <input class="input" name="chave" type="password" autocomplete="off" placeholder="Cole a chave do Google Places"/>
+          <label class="check"><input type="checkbox" name="guardar" ${guardarDadosGoogle() ? 'checked' : ''}/> Guardar telefone, site e endereço do Google ao salvar um lugar</label>
+          <button class="btn btn-sec" type="submit">Salvar</button>
+          ${chavePlaces() ? '<button class="btn btn-perigo" type="button" data-acao="remover-places">Remover chave</button>' : ''}
+        </form>
+        <p class="dica">Nota, avaliações e horários do Google nunca são guardados no seu cadastro (os termos do Google não permitem). Telefone, site e endereço só ficam salvos se você deixar a opção acima ligada.</p>
+      </div>
+
+      <div class="card-config">
         <h3>🔄 Versão do app</h3>
         <p class="dica">Rodando: build de ${esc(new Date(BUILD_ATUAL.em).toLocaleString('pt-BR'))} (${esc(BUILD_ATUAL.sha)}).</p>
         <button class="btn btn-sec" data-acao="atualizar">Buscar atualização</button>
@@ -151,6 +165,14 @@ export function render(container) {
         toast(`✨ IA ativa (modelo ${escolhido})`);
       } catch (err) { toast(err.tipo === 'chave' ? 'Chave não aceita. Confira e tente de novo.' : 'Não consegui testar agora (internet?)'); }
     });
+    el.querySelector('[data-form="places"]').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const chave = String(fd.get('chave')).trim();
+      await salvarIntegracoes({ ...(chave ? { placesKey: chave } : {}), guardarDadosGoogle: fd.has('guardar') });
+      toast(chave ? '🗺️ Chave do Places salva' : 'Preferência salva');
+    });
+    el.querySelector('[data-acao="remover-places"]')?.addEventListener('click', async () => { await salvarIntegracoes({ placesKey: '' }); toast('Chave removida'); });
     el.querySelector('[data-acao="remover-ia"]')?.addEventListener('click', async () => { await salvarIntegracoes({ geminiKey: '' }); toast('Chave removida'); });
     el.querySelector('[data-acao="atualizar"]').addEventListener('click', async () => {
       const r = await buscarAtualizacao();

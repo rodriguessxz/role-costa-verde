@@ -4,6 +4,9 @@ import { salvarEdicao } from './edicao.js';
 import { ico } from './icons.js';
 import { esc, abrirModal, confirmar, toast, quemMexeu } from './ui.js';
 import { tempoRelativo, dataCurta } from './lib/tempo.js';
+import { iaAtiva, perguntarIA, mensagemDoErro } from './ia-cliente.js';
+import { promptMensagemContato } from './lib/ia.js';
+import { getViagem } from './viagem.js';
 import {
   ETAPAS, CANAIS, TIPOS_VALOR, interacoesDoLugar, resumoContatos, situacaoRetorno, textoValor, etapaDoLugar
 } from './lib/contatos.js';
@@ -152,6 +155,7 @@ export function htmlBlocoContato(lugar, interacoes) {
     ${links.length ? `<div class="acoes acoes-contato">${links.map((c) => `<a class="btn btn-sm btn-sec" data-canal="${c.canal}" href="${esc(c.href)}" ${c.externo || c.canal === 'whatsapp' ? 'target="_blank" rel="noopener noreferrer"' : ''}>${CANAIS[c.canal].emoji} ${c.rotulo}</a>`).join('')}</div>
       <div class="lembrete-registro" data-lembrete hidden></div>` : '<p class="dica">Sem telefone, WhatsApp ou e-mail salvos. Use Editar para cadastrar e ter os atalhos aqui.</p>'}
     <button class="btn btn-grande" data-acao="registrar-contato">＋ Registrar contato</button>
+    ${iaAtiva() ? '<button class="btn btn-sec btn-grande" data-acao="rascunhar">✨ Rascunhar mensagem com IA</button>' : ''}
     ${interacoes.length ? `<ol class="linha-tempo">${interacoes.map((i) => `<li data-interacao="${esc(i.id)}" tabindex="0" role="button">
         <span class="lt-ponto">${CANAIS[i.canal]?.emoji || '📝'}</span>
         <div class="lt-corpo">
@@ -172,6 +176,7 @@ export function ligarBlocoContato(raiz, lugar, interacoes) {
     const etapa = e.target.closest('[data-etapa]');
     if (etapa) return atualizar('lugares', lugar.id, { etapaContato: etapa.dataset.etapa });
     if (e.target.closest('[data-acao="registrar-contato"]')) return abrirRegistroContato(lugar);
+    if (e.target.closest('[data-acao="rascunhar"]')) return abrirRascunho(lugar, interacoes);
     const item = e.target.closest('[data-interacao]');
     if (item) return abrirRegistroContato(lugar, { interacao: interacoes.find((i) => i.id === item.dataset.interacao) });
     const canal = e.target.closest('[data-canal]');
@@ -192,5 +197,65 @@ export function ligarBlocoContato(raiz, lugar, interacoes) {
   });
   bloco.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && e.target.matches('[data-interacao]')) e.target.click();
+  });
+}
+
+/* ------------------------- rascunho de mensagem (IA) ------------------------- */
+
+const PERGUNTAS = {
+  vaga: 'Tem vaga nas datas?', preco: 'Qual o valor (por noite/pessoa)?', pagamento: 'Formas de pagamento e sinal',
+  estrutura: 'Banheiro, chuveiro quente e energia', regras: 'Regras (silêncio, fogueira, som)', checkin: 'Horário de check-in e check-out',
+  carro: 'Estacionamento e acesso de carro', reserva: 'Como reservar'
+};
+
+/** Janela que pede à IA um rascunho de mensagem para o local. Nada é enviado sozinho: a pessoa revisa e manda. */
+export function abrirRascunho(lugar, interacoes) {
+  const v = getViagem();
+  let ctrl = null;
+  const { el } = abrirModal({
+    titulo: '✨ Rascunhar mensagem',
+    corpo: `<p class="dica contato-lugar">${esc(lugar.nome)}</p>
+    <form class="form">
+      <div class="grid2">
+        <label>Por onde vai enviar<select class="input" name="canal"><option value="whatsapp">WhatsApp</option><option value="email">E-mail</option></select></label>
+        <label>Quantas pessoas<input class="input" type="number" name="pessoas" min="1" value="2"/></label>
+      </div>
+      <label>Datas<input class="input" name="datas" value="${esc(v.inicio && v.fim ? `${v.inicio} a ${v.fim} (flexível)` : '')}" placeholder="Ex.: 30/12 a 02/01"/></label>
+      <div>${Object.values(PERGUNTAS).map((t, i) => `<label class="check"><input type="checkbox" name="p" value="${esc(t)}" ${i < 2 ? 'checked' : ''}/> ${esc(t)}</label>`).join('')}</div>
+      <button class="btn btn-grande" type="submit">Gerar rascunho</button>
+      <div data-saida></div>
+    </form>`,
+    onFechar: () => ctrl?.abort()
+  });
+  const saida = el.querySelector('[data-saida]');
+  el.querySelector('form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    saida.innerHTML = '<p class="dica">A IA está escrevendo…</p>';
+    ctrl = new AbortController();
+    const { sistema, usuario } = promptMensagemContato({
+      lugar, viagem: v, interacoes, canal: fd.get('canal'), perguntas: fd.getAll('p'), datas: String(fd.get('datas')), pessoas: Number(fd.get('pessoas')) || 2
+    });
+    try {
+      const r = await perguntarIA({ sistema, mensagens: [{ papel: 'user', texto: usuario }], signal: ctrl.signal });
+      const zap = soDigitos(lugar.contato || lugar.telefone);
+      saida.innerHTML = `<label>Revise e edite antes de enviar<textarea class="input" name="msg" rows="8">${esc(r.texto)}</textarea></label>
+        <div class="acoes">
+          <button type="button" class="btn btn-sec" data-copiar>Copiar</button>
+          ${fd.get('canal') === 'whatsapp' && zap.length >= 10 ? '<a class="btn" data-zap target="_blank" rel="noopener noreferrer">Abrir no WhatsApp</a>' : ''}
+        </div><p class="dica">Depois de enviar, toque em “Registrar contato” para guardar a conversa.</p>`;
+      const caixa = saida.querySelector('[name=msg]');
+      saida.querySelector('[data-copiar]').addEventListener('click', async () => {
+        try { await navigator.clipboard.writeText(caixa.value); toast('Mensagem copiada'); } catch { toast('Não consegui copiar'); }
+      });
+      const a = saida.querySelector('[data-zap]');
+      if (a) {
+        const atualizar = () => { a.href = `https://wa.me/55${zap}?text=${encodeURIComponent(caixa.value)}`; };
+        atualizar();
+        caixa.addEventListener('input', atualizar);
+      }
+    } catch (err) {
+      if (err.name !== 'AbortError') saida.innerHTML = `<div class="aviso">${esc(mensagemDoErro(err))}</div>`;
+    }
   });
 }

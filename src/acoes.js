@@ -2,6 +2,7 @@
 import { adicionar, atualizar, listar } from './store.js';
 import { abrirModal, esc, toast, opcoesSelect, STATUS, tipoInfo } from './ui.js';
 import { regiaoMaisProxima } from './lib/geo.js';
+import { guardarDadosGoogle } from './integracoes.js';
 import { ordenarDias, atividadesDoDia, proximaOrdem } from './lib/roteiro.js';
 
 /**
@@ -11,6 +12,10 @@ import { ordenarDias, atividadesDoDia, proximaOrdem } from './lib/roteiro.js';
 export async function salvarResultado(r, { status = 'ideia', observacoes = '', extra = {} } = {}) {
   if (r.osmId) {
     const existente = listar('lugares').find((l) => l.osmId === r.osmId);
+    if (existente) return existente.id;
+  }
+  if (r.googlePlaceId) {
+    const existente = listar('lugares').find((l) => l.googlePlaceId === r.googlePlaceId);
     if (existente) return existente.id;
   }
   const dados = {
@@ -36,6 +41,14 @@ export async function salvarResultado(r, { status = 'ideia', observacoes = '', e
     tags: ['confirmar-dados'],
     ...extra
   };
+  if (r.googlePlaceId) {
+    // Google Places: guardamos o identificador e o link. Telefone/site/endereço só se a opção estiver ligada em Configurações.
+    // Nota, avaliações e horários NÃO são guardados (os termos do Google não permitem): ficam só na tela de resultados.
+    dados.googlePlaceId = r.googlePlaceId;
+    dados.fonte = 'Google Maps (Places)';
+    dados.fonteUrl = r.googleMapsUri;
+    if (!guardarDadosGoogle()) { dados.telefone = undefined; dados.site = undefined; dados.endereco = undefined; }
+  }
   if (r.pago === true) dados.preco = 'Pago (valor não informado na fonte)';
   if (r.pago === false) dados.preco = 'Gratuito segundo a fonte (confirmar)';
   return adicionar('lugares', dados);

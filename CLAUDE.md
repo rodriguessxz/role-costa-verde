@@ -251,3 +251,11 @@ Para procurar campings e registrar cada conversa dentro do app (em vez de pesqui
 - Importar lê nome, endereço, link e coordenadas (link longo = posição exata; link curto = palpite pelo nome via Photon, marcado `coordAprox`).
 - Se algum dia for preciso ter nota/telefone/foto do Google DENTRO do app: Places API (New) exige chave + conta de faturamento no Google Cloud e os termos limitam guardar dados.
 - O embed do Google é um recurso não documentado de modo de busca; se parar de funcionar, a aba Google mostra o mapa vazio e o botão "Abrir no Google Maps" continua valendo.
+
+## IA, Places e atualização (11/2026)
+
+- **Atualização do PWA** (`src/atualizacao.js`): service worker se atualiza ao abrir/voltar/30 min; `/version.json` (emitido no build, fora do cache) acusa versão nova → faixa "Atualizar agora"; Config tem "Buscar atualização" e "Forçar atualização" (limpa cache do app, não os dados).
+- **IA gratuita (Gemini, chave do AI Studio, sem cartão)**: `lib/gemini.js` (cliente), `lib/ia.js` (contexto, prompts, validação e simulação — puro/testado), `ia-cliente.js`, `views/ia.js` (chat), `ia-roteiro.js` (ajuste de roteiro com prévia e desfazer), rascunho de mensagem em `contatos.js`.
+  A IA só propõe; o app valida contra os dados reais, mostra a prévia e só grava com aprovação. Nunca altera atividade confirmada/feita nem apaga. Telefone/e-mail/Instagram nunca vão no prompt.
+  A chave fica em `config/integracoes` (Firestore, só os 2 e-mails leem). Nunca no repositório.
+- **Google Places (opcional, exige faturamento no Google Cloud)**: `lib/places.js`, seção "Resultados com detalhes" na aba Google do Explorar. Trava de 400 buscas/mês por aparelho. Nota/avaliações/horários não são guardados; telefone/site/endereço só se a opção estiver ligada.

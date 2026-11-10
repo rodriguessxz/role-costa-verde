@@ -53,10 +53,12 @@ async function aplicar(g) {
   const refDia = {};
   const desfazer = { diasCriados: [], atividadesCriadas: [], atualizacoes: g.atualizar.map((u) => ({ id: u.id, antes: u.antes })) };
   const resolver = (v) => (typeof v === 'string' && v.startsWith('ref:') ? refDia[v] : v);
+  guardarDesfazer(desfazer); // já na largada: se algo falhar no meio, ainda dá para desfazer o que foi feito
 
   for (const d of g.criarDias) {
     refDia[d.ref] = await adicionar('dias', { titulo: d.titulo, data: d.data, regiao: d.regiao, nota: '', ordem: d.ordem });
     desfazer.diasCriados.push(refDia[d.ref]);
+    guardarDesfazer(desfazer);
   }
   for (const u of g.atualizar) {
     const campos = { ...u.campos };
@@ -70,8 +72,8 @@ async function aplicar(g) {
       alternativa: a.alternativa, confirmada: false, feito: false, ordem: a.ordem, nota: 'Sugerido pela IA'
     });
     desfazer.atividadesCriadas.push(id);
+    guardarDesfazer(desfazer);
   }
-  guardarDesfazer(desfazer);
 }
 
 /* ------------------------------ prévia ------------------------------ */

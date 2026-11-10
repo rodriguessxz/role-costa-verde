@@ -2,7 +2,11 @@
 // O Google mostra os pins, notas, fotos e telefones dele; o app não consegue ler o que você toca ali dentro.
 // Para guardar um lugar, use "Importar do Google Maps" (compartilhar ou colar o link).
 import { consultaGoogle, urlEmbutida, urlAbrirNoGoogle } from '../lib/gmaps.js';
-import { esc, html, debounce } from '../ui.js';
+import { esc, html, debounce, toast, tipoInfo } from '../ui.js';
+import { chavePlaces } from '../integracoes.js';
+import { buscarPlaces, lerUso, restantes, LIMITE_MENSAL, MENSAGENS_PLACES } from '../lib/places.js';
+import { CENTROS_REGIAO, linkGoogleMaps } from '../lib/geo.js';
+import { modalSalvarResultado, salvarParaContatar, salvarResultado, abrirAdicionarAoRoteiro } from '../acoes.js';
 
 const TERMOS = {
   camping: 'camping', praia: 'praia', cachoeira: 'cachoeira', trilha: 'trilha', restaurante: 'restaurante',
@@ -30,6 +34,8 @@ export function render(painel) {
     <div class="google-moldura"><iframe title="Mapa do Google com os resultados da busca" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe>
       <div class="google-estado" data-estado hidden></div></div>
     <p class="google-rodape">Mapa do Google · <a data-abrir2 href="#" target="_blank" rel="noopener noreferrer">abrir em tela cheia ↗</a></p>
+
+    <div class="google-detalhes" data-detalhes></div>
 
     <div class="google-ajuda">
       <h3>Achou um lugar? Guarde no app</h3>
@@ -91,6 +97,8 @@ export function render(painel) {
     try { localStorage.setItem(KEY, JSON.stringify(estado)); } catch { /* ok */ }
     pintar();
     carregar();
+    achados = [];
+    pintarDetalhes();
   }
 
   el.addEventListener('click', (e) => {
@@ -104,6 +112,64 @@ export function render(painel) {
     e.preventDefault();
     buscar(String(new FormData(e.target).get('q')));
   });
+
+  /* ---- resultados detalhados do Google Places (só com chave configurada) ---- */
+  const caixaDet = el.querySelector('[data-detalhes]');
+  let achados = [];
+  const centroDoLocal = () => {
+    const mapa = { Ubatuba: 'ubatuba-centro', Picinguaba: 'ubatuba-norte', Maranduba: 'ubatuba-sul', 'Lagoinha Ubatuba': 'ubatuba-sul', 'Trindade Paraty': 'trindade', Paraty: 'paraty', 'Paraty-Mirim': 'paraty-mirim' };
+    const c = CENTROS_REGIAO[mapa[estado.local]];
+    return c ? { lat: c.lat, lng: c.lng } : undefined;
+  };
+  function pintarDetalhes(msg = '') {
+    if (!chavePlaces()) { caixaDet.innerHTML = ''; return; }
+    const sobra = restantes(lerUso());
+    caixaDet.innerHTML = `<div class="google-ajuda">
+      <h3>Resultados com detalhes (Google)</h3>
+      <p class="dica">Nota, avaliações, telefone, site e horário vindos do Google. Cada busca conta na sua cota gratuita: restam <b>${sobra}</b> de ${LIMITE_MENSAL} neste mês, neste aparelho.</p>
+      <button class="btn" data-acao="buscar-detalhes" ${sobra ? '' : 'disabled'}>Buscar “${esc(estado.consulta)}” com detalhes</button>
+      ${msg ? `<div class="aviso">${esc(msg)}</div>` : ''}
+      <div class="res-lista" data-lista>${achados.map(cartaoGoogle).join('')}</div>
+      ${achados.length ? '<p class="dica">Dados do Google Maps. Confira preço, reserva e acesso antes de ir.</p>' : ''}
+    </div>`;
+  }
+  const cartaoGoogle = (r, i) => `<article class="res-card" data-i="${i}" style="--cor:${tipoInfo(r.tipo).cor}">
+      <div class="res-topo"><span class="card-emoji">${tipoInfo(r.tipo).emoji}</span>
+        <div class="res-titulo"><b>${esc(r.nome)}</b><small>${r.nota ? `★ ${String(r.nota).replace('.', ',')}${r.avaliacoes ? ` (${r.avaliacoes.toLocaleString('pt-BR')})` : ''} · ` : ''}${esc(r.tipoRotulo || tipoInfo(r.tipo).rotulo)}${r.abertoAgora === true ? ' · aberto agora' : r.abertoAgora === false ? ' · fechado agora' : ''}${r.situacao ? ' · ' + esc(r.situacao) : ''}</small></div></div>
+      <div class="info">
+        <div class="linha"><span>Endereço</span><strong>${esc(r.endereco || 'indisponível')}</strong></div>
+        <div class="linha"><span>Telefone</span><strong>${r.telefone ? `<a href="tel:${esc(r.telefone.replace(/[^\d+]/g, ''))}">${esc(r.telefone)}</a>` : '<em class="indisp">indisponível</em>'}</strong></div>
+        <div class="linha"><span>Site</span><strong>${/^https?:\/\//i.test(r.site || '') ? `<a href="${esc(r.site)}" target="_blank" rel="noopener noreferrer">abrir</a>` : '<em class="indisp">indisponível</em>'}</strong></div>
+      </div>
+      <div class="res-acoes">
+        <button class="btn btn-sm" data-acao="contatar">📞 Contatar</button>
+        <button class="btn btn-sm btn-sec" data-acao="salvar">Salvar</button>
+        <button class="btn btn-sm btn-sec" data-acao="roteiro">+ Roteiro</button>
+        <a class="btn btn-sm btn-sec" href="${esc(r.googleMapsUri || linkGoogleMaps(r))}" target="_blank" rel="noopener noreferrer">Google ↗</a>
+      </div></article>`;
+
+  caixaDet.addEventListener('click', async (e) => {
+    const acao = e.target.closest('[data-acao]')?.dataset.acao;
+    if (!acao) return;
+    if (acao === 'buscar-detalhes') {
+      const botao = e.target.closest('button');
+      botao.disabled = true;
+      botao.textContent = 'Buscando…';
+      try {
+        achados = await buscarPlaces({ chave: chavePlaces(), consulta: estado.consulta, centro: centroDoLocal(), raioM: 25000 });
+        pintarDetalhes(achados.length ? '' : 'O Google não achou nada para essa busca.');
+      } catch (err) {
+        if (err.name !== 'AbortError') pintarDetalhes(MENSAGENS_PLACES[err.tipo] || MENSAGENS_PLACES.falha);
+      }
+      return;
+    }
+    const r = achados[Number(e.target.closest('[data-i]')?.dataset.i)];
+    if (!r) return;
+    if (acao === 'contatar') { const id = await salvarParaContatar(r); toast('📞 Salvo em Contatos (a contatar)'); location.hash = `#/lugar/${encodeURIComponent(id)}`; }
+    if (acao === 'salvar') await modalSalvarResultado(r);
+    if (acao === 'roteiro') { const id = await salvarResultado(r, { status: 'planejado' }); abrirAdicionarAoRoteiro({ lugarId: id, titulo: r.nome }); }
+  });
+  pintarDetalhes();
 
   pintar();
   buscar(estado.consulta);

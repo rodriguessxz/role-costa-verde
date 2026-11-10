@@ -143,6 +143,8 @@ function desenhar(el) {
       </section>
     </div>
 
+    <a class="faixa-roleta" href="#/ia"><span>${ico('ia')}</span><div><b>Assistente IA</b><small>Pergunte sobre a viagem ou peça um ajuste no roteiro.</small></div></a>
+
     <a class="faixa-roleta" href="#/roleta"><span>${ico('dado')}</span><div><b>Sem plano pra agora?</b><small>Gire a roleta e deixe o rolê escolher.</small></div></a>`;
 
   el.querySelectorAll('[data-acao="ideia"], [data-vazio="ideia"]').forEach((b) => b.addEventListener('click', ideiaRapida));
