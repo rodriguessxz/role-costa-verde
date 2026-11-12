@@ -6,7 +6,9 @@ import { esc, html, debounce, toast, tipoInfo } from '../ui.js';
 import { chavePlaces } from '../integracoes.js';
 import { buscarPlaces, lerUso, restantes, LIMITE_MENSAL, MENSAGENS_PLACES } from '../lib/places.js';
 import { CENTRO_REGIAO, CENTROS_REGIAO, linkGoogleMaps } from '../lib/geo.js';
-import { buscaRapida } from '../lib/geocode.js';
+import { importarPorConsulta } from '../importacao.js';
+import { interpretarConsulta, rotuloImportacao } from '../lib/consulta.js';
+import { CATEGORIAS } from '../lib/osm.js';
 import { modalSalvarResultado, salvarParaContatar, salvarResultado, abrirAdicionarAoRoteiro, importarLote } from '../acoes.js';
 
 const TERMOS = {
@@ -113,6 +115,7 @@ export function render(painel) {
     const local = e.target.closest('[data-local]');
     if (local) { estado.local = local.dataset.local; buscar(consultaGoogle(TERMOS[estado.termo], estado.local)); }
   });
+  campo.addEventListener('input', debounce(() => { if (!importando) pintarLote(); }, 200));
   el.querySelector('[data-form="google"]').addEventListener('submit', (e) => {
     e.preventDefault();
     buscar(String(new FormData(e.target).get('q')));
@@ -184,24 +187,28 @@ export function render(painel) {
   pintarDetalhes();
 
   /* ---- importar todos os resultados como leads (dados abertos, grátis) ---- */
-  const CAT_DO_TERMO = { camping: 'camping', praia: 'praia', cachoeira: 'cachoeira', trilha: 'trilha', restaurante: 'restaurante', mercado: 'mercado', posto: 'posto', pousada: 'hospedagem', estacionamento: 'estacionamento', farmacia: 'servico' };
+  const rotulosCat = Object.fromEntries(Object.entries(CATEGORIAS).map(([k, c]) => [k, c.rotulo]));
   function pintarLote() {
-    el.querySelector('[data-lote]').innerHTML = `<button class="btn btn-grande btn-lote" data-acao="importar-tudo">📥 Importar todos (${esc(ROTULOS[estado.termo].replace(/^\S+\s/, ''))} · ${esc(estado.local.replace(/ (Ubatuba|Paraty)$/, ''))}) para triagem</button>
+    const i = interpretarConsulta(campo.value || estado.consulta);
+    el.querySelector('[data-lote]').innerHTML = `<button class="btn btn-grande btn-lote" data-acao="importar-tudo">📥 Importar todos: ${esc(rotuloImportacao(i, rotulosCat))}</button>
       <p class="dica">Cria um cartão para cada lugar achado. Depois, em <b>Contatos → Para triar</b>, você descarta ou abre no Google Maps para ver a nota e as fotos.</p>`;
   }
+  let importando = false;
   async function importarTudo(botao) {
+    if (importando) return;
+    importando = true;
     botao.disabled = true;
     botao.textContent = 'Buscando lugares…';
     try {
-      const centro = centroDoLocal() || CENTRO_REGIAO;
-      const lista = await buscaRapida([CAT_DO_TERMO[estado.termo]], centro, 15, '');
-      if (!lista.length) { toast('Não achei nada nessa região. Tente outra categoria ou local.'); return pintarLote(); }
-      const { novos, jaExistiam } = await importarLote(lista);
-      toast(`📥 ${novos} lead${novos === 1 ? '' : 's'} para triar${jaExistiam ? ` (${jaExistiam} já estavam salvos)` : ''}`);
+      const r = await importarPorConsulta(campo.value || estado.consulta, { localPadrao: estado.local.replace(/ (Ubatuba|Paraty)$/, ''), aoProgresso: (m) => { botao.textContent = m; } });
+      if (!r.total) { toast(`Não achei nada em ${r.local}. Tente outro termo ou lugar.`); return pintarLote(); }
+      toast(`📥 ${r.novos} lead${r.novos === 1 ? '' : 's'} em ${r.local} (${r.comTelefone} com telefone)${r.jaExistiam ? ` · ${r.jaExistiam} já salvos` : ''}`, 5000);
       location.hash = '#/contatos';
-    } catch {
-      toast(navigator.onLine ? 'Não consegui buscar agora. Tente de novo.' : 'Sem internet.');
+    } catch (err) {
+      toast(!navigator.onLine ? 'Sem internet.' : err.message === 'Digite o que buscar' ? err.message : 'Não consegui buscar agora. Tente de novo.');
       pintarLote();
+    } finally {
+      importando = false;
     }
   }
 

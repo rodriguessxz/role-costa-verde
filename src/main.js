@@ -11,6 +11,7 @@ import { mostrarLogin, esconderLogin } from './views/login.js';
 import { getViagem } from './viagem.js';
 import { diasAte } from './lib/tempo.js';
 import { iniciarAtualizacao, aplicarAtualizacao } from './atualizacao.js';
+import { iniciarLembreteWhatsApp } from './mensagem-whatsapp.js';
 
 // rota → view (carregada sob demanda: o app abre mais rápido no celular).
 // Cada view exporta render(container, params) e pode devolver uma função de limpeza.
@@ -128,6 +129,7 @@ function montarShell() {
   monitorarRede();
   assinar('config', atualizarPilula);
   assinar('lugares', atualizarSelos);
+  iniciarLembreteWhatsApp();
   window.addEventListener('hashchange', rotear);
 }
 

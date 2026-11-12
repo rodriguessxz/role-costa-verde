@@ -268,3 +268,8 @@ Para procurar campings e registrar cada conversa dentro do app (em vez de pesqui
 ## Mensagem do WhatsApp e visibilidade da triagem (11/2026)
 - `lib/mensagens.js` (puro, testado) + `mensagem-whatsapp.js`: o botão WhatsApp (ficha e tela Contatos) abre uma mensagem pronta, descolada e EDITÁVEL (3 estilos: descolada/curta/educada; pessoas e datas ajustáveis), com "Abrir no WhatsApp" (wa.me já com o texto), "Copiar", "Melhorar com IA" (opcional) e "Registrar contato" depois de enviar. Sem número salvo, pede o número e guarda no lugar.
 - Triagem mais visível: botão "📥 Importar todos…" direto na aba Google do Explorar (busca rápida de dados abertos → leads), botão fixo na aba Dados abertos, cartão laranja no Início e selo com o número na aba "Mais".
+
+## Importação por abrangência e WhatsApp em 1 toque (11/2026)
+- A aba Google do Explorar importa conforme o que foi DIGITADO: `lib/consulta.js` entende categoria + local ("camping em Paraty"); `importacao.js` acha a área da cidade/região no Nominatim (`lib/nominatim.js`, grátis, 1 consulta/s), varre a área inteira (divide em 4 se lotar 40) e importa tudo como leads. Nominatim traz telefone/site/horário quando o OpenStreetMap tem. Plano B: busca rápida (Photon) em círculo.
+- Cartões (Contatos → Para triar e funil): com telefone, botão "💬 Chamar no WhatsApp (mensagem pronta)" abre o WhatsApp com a mensagem já escrita (✏️ edita/troca o estilo); sem telefone, campo para colar o número (fica salvo no lugar).
+- Ao voltar do WhatsApp o app pergunta "Você mandou a mensagem?"; se sim, registra o contato, marca "Aguardando resposta" e agenda retorno em 2 dias (`mensagem-whatsapp.js → iniciarLembreteWhatsApp`).

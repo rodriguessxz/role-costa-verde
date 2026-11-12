@@ -30,6 +30,7 @@ export async function salvarResultado(r, { status = 'ideia', observacoes = '', e
     observacoes,
     endereco: r.endereco || (r.detalhe ? String(r.detalhe) : undefined),
     telefone: r.telefone,
+    email: r.email,
     site: r.site,
     horario: r.horario,
     acessoInfo: r.acessoInfo,

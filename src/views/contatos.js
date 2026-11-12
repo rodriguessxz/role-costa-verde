@@ -1,7 +1,7 @@
 // 📞 Contatos: o funil dos campings (e outros locais) que estamos procurando e contatando.
 import { assinarVarias, listar, atualizar } from '../store.js';
 import { abrirRegistroContato } from '../contatos.js';
-import { abrirMensagemWhatsApp } from '../mensagem-whatsapp.js';
+import { abrirMensagemWhatsApp, htmlWhatsApp, salvarNumeroDoCartao } from '../mensagem-whatsapp.js';
 import { ETAPAS, CANAIS, ETAPAS_ABERTAS, interacoesDoLugar, resumoContatos, situacaoRetorno, etapaDoLugar } from '../lib/contatos.js';
 import { tempoRelativo, dataCurta } from '../lib/tempo.js';
 import { ico } from '../icons.js';
@@ -34,8 +34,8 @@ function cartao(l, interacoes) {
     ${r.retornoEm ? `<p class="contato-retorno ${sit === 'atrasado' ? 'atrasado' : ''}">↪ Retornar ${sit === 'hoje' ? 'hoje' : esc(dataCurta(r.retornoEm))}${sit === 'atrasado' ? ' (atrasado)' : ''}${r.ultima?.proximoPasso ? ` · ${esc(r.ultima.proximoPasso)}` : ''}</p>` : ''}
     <div class="res-acoes">
       <button class="btn btn-sm" data-acao="registrar">${ico('contato')} Registrar</button>
-      <button class="btn btn-sm btn-whats" data-acao="zap">💬 WhatsApp</button>
     </div>
+    ${htmlWhatsApp(l)}
   </article>`;
 }
 
@@ -49,6 +49,7 @@ function cartaoTriagem(l) {
         <small>${esc([t.rotulo, REGIOES[l.regiao], l.endereco].filter(Boolean).join(' · '))}</small></span>
     </div>
     ${l.telefone ? `<p class="contato-resumo">📞 ${esc(l.telefone)}</p>` : ''}
+    ${htmlWhatsApp(l)}
     <a class="btn btn-sec btn-grande" href="${esc(urlGoogleDoLugar(l))}" target="_blank" rel="noopener noreferrer">Ver nota e fotos no Google Maps ↗</a>
     <div class="triagem-botoes">
       <button class="btn btn-descartar" data-acao="descartar">🗑️ Descartar</button>
@@ -147,7 +148,7 @@ export function render(container) {
       return toast('📌 No funil, etapa “A contatar”');
     }
     if (acao === 'zap') {
-      const l = listar('lugares').find((x) => x.id === e.target.closest('.contato-card').dataset.id);
+      const l = listar('lugares').find((x) => x.id === e.target.closest('[data-id]').dataset.id);
       if (l) abrirMensagemWhatsApp(l);
       return;
     }
@@ -155,6 +156,13 @@ export function render(container) {
       const l = listar('lugares').find((x) => x.id === e.target.closest('.contato-card').dataset.id);
       if (l) abrirRegistroContato(l);
     }
+  });
+
+  el.addEventListener('submit', async (e) => {
+    const form = e.target.closest('[data-form="numero"]');
+    if (!form) return;
+    e.preventDefault();
+    if (await salvarNumeroDoCartao(form)) toast('💬 Número salvo. A mensagem está pronta.');
   });
 
   return assinarVarias(['lugares', 'interacoes'], desenhar);
